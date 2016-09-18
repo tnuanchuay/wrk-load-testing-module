@@ -7,7 +7,7 @@ import (
 
 type (
 	Home struct{
-		Testset		model.Testset
+		Testset		[]model.Testset
 	}
 )
 
@@ -15,7 +15,7 @@ func (Home) GetViewControl(db *gorm.DB) *Home{
 	//find All Testset
 	var home Home
 
-	db.Find(&Home.Testset)
+	db.Find(&home.Testset)
 
 	return &home
 }

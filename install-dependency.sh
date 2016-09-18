@@ -12,3 +12,5 @@ echo 'Getting gorm'
 go get -u github.com/jinzhu/gorm
 echo 'Getting iris/Go-Template'
 go get -u github.com/kataras/go-template
+echo 'Getting pongo'
+go get -u github.com/flosch/pongo2

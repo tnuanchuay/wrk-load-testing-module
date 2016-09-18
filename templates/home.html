@@ -180,8 +180,6 @@
 
     </div>
 </div>
-
-
 </body>
 <!--   Core JS Files   -->
 <script src="/assets/js/jquery-1.10.2.js" type="text/javascript"></script>
@@ -190,9 +188,14 @@
 <script src="/assets/js/light-bootstrap-dashboard.js"></script>
 
 <script>
+    var testset = JSON.parse(`{{ .Testset }}`);
     var i = 0;
     $(document).ready(function(){
         $("#xform-tr").hide();
+
+        for(var i = 0 ; i < testset.length ; i++){
+            $("#testset").append(`<option>${testset[i].Name}</option>`)
+        }
 
         $("#advance").click(function(){
             var x = $("#xform-tr");
@@ -228,5 +231,4 @@
         $(`#${id}`).remove();
     }
 </script>
-
 </html>

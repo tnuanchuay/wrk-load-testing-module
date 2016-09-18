@@ -6,8 +6,9 @@ import (
 	_ "github.com/jinzhu/gorm/dialects/sqlite"
 	"github.com/kataras/iris"
 	"ahlt/model"
+	"ahlt/view-controller"
+	"fmt"
 	"sync"
-	"github.com/kataras/go-template/django"
 )
 
 func main() {
@@ -23,16 +24,13 @@ func main() {
 	var wrkChannel = make(chan *model.Job, 100)
 
 	iris.Config.IsDevelopment = true
-	iris.UseTemplate(django.New()).Directory("./templates", ".html")
 
 	iris.Static("/assets", "./static/assets", 1)
 
-	iris.Get("/default", func(ctx *iris.Context){
-		ctx.Render("default.html", nil)
-	})
-
 	iris.Get("/", func(ctx *iris.Context){
-		ctx.Render("home.html", nil)
+		home := view_controller.Home{}.GetViewControl(db)
+		fmt.Println(home)
+		ctx.Render("home.html", home)
 	})
 
 	iris.Post("/wrk", func(ctx *iris.Context){
@@ -45,8 +43,8 @@ func main() {
 
 		var job model.Job
 		job.Name = name
-		job.Url = url
-		job.Method = method
+		job.RequestUrl = url
+		job.RequestMethod = method
 
 		var testSet model.Testset
 		db.Find(&testSet, "name = ?", testset).Related(&testSet.Testcase)
@@ -62,10 +60,16 @@ func main() {
 		wg := sync.WaitGroup{}
 		for{
 			select{
-			case <- wrkChannel:
+			case job := <- wrkChannel:
 				wg.Add(1)
 				go func(){
+					var testset model.Testset
+					db.Find(&testset, "id = ?", job.Testset).Related(&testset.Testcase)
+					job.GenerateScript(job.Name)
+					for _, testcase := range testset.Testcase{
+						job.RunWrk(testcase, "time")
 
+					}
 				}()
 			}
 		}
@@ -75,7 +79,14 @@ func main() {
 }
 func initializeTestset(db *gorm.DB) {
 	var t1 model.Testset
+
 	t1.Name = "simple testset"
+	db.First(&t1, "name = ?", t1.Name).Related(&t1.Testcase)
+
+	if t1.ID == 1{
+		return;
+	}
+
 	t1.Testcase = append(t1.Testcase,
 		model.Testcase{Thread:"1",
 			Connection:"1",
