@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <link rel="icon" type="image/png" href="assets/img/favicon.ico">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+
+    <title>Automate Http/Https Load Testing</title>
+
+    <meta content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0' name='viewport' />
+    <meta name="viewport" content="width=device-width" />
+
+
+    <!-- Bootstrap core CSS     -->
+    <link href="/assets/css/bootstrap.min.css" rel="stylesheet" />
+
+    <!-- Animation library for notifications   -->
+    <link href="/assets/css/animate.min.css" rel="stylesheet"/>
+
+    <!--  Light Bootstrap Table core CSS    -->
+    <link href="/assets/css/light-bootstrap-dashboard.css" rel="stylesheet"/>
+
+
+    <!--  CSS for Demo Purpose, don't include it in your project     -->
+    <link href="/assets/css/demo.css" rel="stylesheet" />
+
+
+    <!--     Fonts and icons     -->
+    <link href="http://maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
+    <link href='http://fonts.googleapis.com/css?family=Roboto:400,700,300' rel='stylesheet' type='text/css'>
+    <link href="/assets/css/pe-icon-7-stroke.css" rel="stylesheet" />
+
+</head>
+<body>
+
+<div class="wrapper">
+    <div class="sidebar" data-color="purple" data-image="assets/img/sidebar-5.jpg">
+
+        <!--
+
+            Tip 1: you can change the color of the sidebar using: data-color="blue | azure | green | orange | red | purple"
+            Tip 2: you can also add an image using data-image tag
+
+        -->
+
+        <div class="sidebar-wrapper">
+            <div class="logo">
+                <a href="http://www.creative-tim.com" class="simple-text">
+                    Automate Http/Https Load Testing
+                </a>
+            </div>
+
+            <ul class="nav">
+                <li class="active">
+                    <a href="dashboard.html">
+                        <i class="pe-7s-play"></i>
+                        <p>Run - Testing</p>
+                    </a>
+                </li>
+                <li>
+                    <a href="user.html">
+                        <i class="pe-7s-note2"></i>
+                        <p>Test Set</p>
+                    </a>
+                </li>
+                <li>
+                    <a href="table.html">
+                        <i class="pe-7s-news-paper"></i>
+                        <p>History</p>
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="main-panel">
+        <nav class="navbar navbar-default navbar-fixed">
+            <div class="container-fluid">
+                <div class="navbar-header">
+                    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navigation-example-2">
+                        <span class="sr-only">Toggle navigation</span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </button>
+                    <a class="navbar-brand" href="#">Run - Testing</a>
+                </div>
+            </div>
+        </nav>
+
+
+        <div class="content">
+            <div class="container-fluid">
+                <form action="/wrk" method="post">
+                    <table class="table" id="wrkform">
+                        <tr>
+                            <td>
+                                <label for="url">Test Name</label>
+                            </td>
+                            <td>
+                                <div class="form-group">
+                                    <input id="name" name="name" class="form-control" type="text" required/>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <label for="url">URL</label>
+                            </td>
+                            <td>
+                                <div class="form-group">
+                                    <input id="url" name="url" class="form-control" type="text" required/>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <label for="method">METHOD</label>
+                            </td>
+                            <td>
+                                <div class="form-group">
+                                    <select id="method" class="form-control form-inline" name="method">
+                                        <option>GET</option>
+                                        <option>POST</option>
+                                        <option>PUT</option>
+                                        <option>DELETE</option>
+                                    </select>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <label for="testset">Test Set</label>
+                            </td>
+                            <td>
+                                <div class="form-group">
+                                    <select id="testset" class="form-control form-inline" name="testset">
+                                    </select>
+                                </div>
+                            </td>
+                        </tr>
+                    </table>
+                    <div id="xform-tr">
+                        <table class="table">
+                            <thead>
+                            <tr>
+                                <td>
+                                    <label>x-www-form-urlencoded</label>
+                                </td>
+                                <td colspan="2">
+                                    <div class="pull-right">
+                                        <button type="button" class="btn btn-default" id="xform-plus"><i class="pe-7s-plus"></i> Add</button>
+                                    </div>
+                                </td>
+                            </tr>
+                            </thead>
+                            <tbody id="xform-field">
+
+                            </tbody>
+                        </table>
+                    </div>
+                    <table class="table">
+                        <tr>
+                            <td></td>
+                            <td>
+                                <div class="pull-right">
+                                    <button type="submit" class="btn btn-success" id="run"><i class="pe-7s-play"></i> Run</button>
+                                    <button type="button" class="btn btn-default" id="advance">Advance Option</button>
+                                </div>
+                            </td>
+                        </tr>
+                    </table>
+                </form>
+            </div>
+        </div>
+
+
+        <footer class="footer">
+        </footer>
+
+    </div>
+</div>
+
+
+</body>
+<!--   Core JS Files   -->
+<script src="/assets/js/jquery-1.10.2.js" type="text/javascript"></script>
+<script src="/assets/js/bootstrap.min.js" type="text/javascript"></script>
+<script src="/assets/js/bootstrap-checkbox-radio-switch.js"></script>
+<script src="/assets/js/light-bootstrap-dashboard.js"></script>
+
+<script>
+    var i = 0;
+    $(document).ready(function(){
+        $("#xform-tr").hide();
+
+        $("#advance").click(function(){
+            var x = $("#xform-tr");
+            if(x.is(":visible")){
+                x.hide();
+            }else{
+                x.show();
+            }
+        });
+
+        $("#xform-plus").click(function(){
+
+            $("#xform-field").append(`
+                <tr id="${i}">
+                    <td>
+                        <input class="form-control" type="text" name="key" placeholder="Key" required>
+                    </td>
+                    <td>
+                        <input class="form-control" type="text" name="value" placeholder="Value" required>
+                    </td>
+                    <td>
+                        <div class="pull-right">
+                            <button type="button" class="btn btn-danger" onclick="remove(${i})">Delete</button>
+                        </div>
+                    </td>
+                </tr>
+            `);
+            i++;
+        })
+    });
+
+    function remove(id){
+        $(`#${id}`).remove();
+    }
+</script>
+
+</html>
