@@ -8,6 +8,7 @@ import (
 	"strings"
 	"io/ioutil"
 	"ahlt/static"
+	"crypto/md5"
 )
 
 type Job struct{
@@ -35,7 +36,7 @@ func (r *Job) KeyValueToLoad(keys, values []string){
 
 
 
-func (j *Job) RunWrk(ts Testcase, label string){
+func (j *Job) RunWrk(ts Testcase, label, scriptFile string){
 	t := ts.Thread
 	c := ts.Connection
 	d := ts.Duration
@@ -43,7 +44,7 @@ func (j *Job) RunWrk(ts Testcase, label string){
 	url := j.RequestUrl
 	var command *exec.Cmd
 
-	command = exec.Command("wrk", "-t"+t, "-c"+c, "-d"+d, "-s", fmt.Sprintf("lua/%s.lua", j.Name),url)
+	command = exec.Command("wrk", "-t"+t, "-c"+c, "-d"+d, "-s", scriptFile,url)
 
 	fmt.Println("label", label)
 	if label == "time" {
@@ -74,12 +75,17 @@ func (j *Job) RunWrk(ts Testcase, label string){
 	//mongoChan <- wrkResult
 }
 
-func (j *Job) GenerateScript(filename string){
+func (j *Job) GenerateScript(filename string)string{
 	script := ""
 	script += fmt.Sprintf(static.LUA_METHOD, j.RequestMethod)
 	if len(j.Load) > 0{
 		script += fmt.Sprintf(static.LUA_LOAD, j.Load)
 		script += fmt.Sprintf(static.LUA_CONTENTTYPE, "application/x-www-form-urlencoded")
 	}
-	ioutil.WriteFile(fmt.Sprintf("lua/%s.lua", filename), []byte(script), 0644)
+	md5filename := md5.Sum([]byte(filename))
+	fmt.Println(script)
+	fullpath := fmt.Sprintf("lua/%x.lua", md5filename)
+	err := ioutil.WriteFile(fullpath, []byte(script), 0644)
+	fmt.Println(err)
+	return fullpath
 }

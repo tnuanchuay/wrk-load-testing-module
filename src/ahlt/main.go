@@ -65,9 +65,9 @@ func main() {
 				go func(){
 					var testset model.Testset
 					db.Find(&testset, "id = ?", job.Testset).Related(&testset.Testcase)
-					job.GenerateScript(job.Name)
+					scriptFile := job.GenerateScript(job.Name)
 					for _, testcase := range testset.Testcase{
-						job.RunWrk(testcase, "time")
+						job.RunWrk(testcase, "time", scriptFile)
 
 					}
 				}()
