@@ -19,6 +19,7 @@ type Job struct{
 	Label         string
 	Testset       uint
 	Load          string
+	WrkResult	[]WrkResult
 }
 
 func (r *Job) KeyValueToLoad(keys, values []string){
@@ -36,7 +37,7 @@ func (r *Job) KeyValueToLoad(keys, values []string){
 
 
 
-func (j *Job) RunWrk(ts Testcase, label, scriptFile string){
+func (j *Job) RunWrk(ts Testcase, label, scriptFile string, db *gorm.DB){
 	t := ts.Thread
 	c := ts.Connection
 	d := ts.Duration
@@ -69,10 +70,10 @@ func (j *Job) RunWrk(ts Testcase, label, scriptFile string){
 	command.Wait()
 	fmt.Println(out)
 
-	//wrkResult := WrkResult{}
-	//wrkResult.SetData(url, out, time)
-	//
-	//mongoChan <- wrkResult
+	wrk := WrkResult{}
+	wrk.SetData(url, out)
+	wrk.JobID = j.ID
+	j.WrkResult = append(j.WrkResult, wrk)
 }
 
 func (j *Job) GenerateScript(filename string)string{

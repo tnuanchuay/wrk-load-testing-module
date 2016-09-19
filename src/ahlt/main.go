@@ -19,7 +19,7 @@ func main() {
 	}
 	defer db.Close()
 
-	initializeMode(db)
+	initializeModel(db)
 	initializeTestset(db)
 	var wrkChannel = make(chan *model.Job, 100)
 
@@ -67,9 +67,10 @@ func main() {
 					db.Find(&testset, "id = ?", job.Testset).Related(&testset.Testcase)
 					scriptFile := job.GenerateScript(job.Name)
 					for _, testcase := range testset.Testcase{
-						job.RunWrk(testcase, "time", scriptFile)
+						job.RunWrk(testcase, "time", scriptFile, db)
 
 					}
+					db.Save(&job)
 				}()
 			}
 		}
@@ -121,8 +122,9 @@ func initializeTestset(db *gorm.DB) {
 	db.Save(&t1)
 }
 
-func initializeMode(db *gorm.DB){
+func initializeModel(db *gorm.DB){
 	db.AutoMigrate(&model.Job{})
 	db.AutoMigrate(&model.Testcase{})
 	db.AutoMigrate(&model.Testset{})
+	db.AutoMigrate(&model.WrkResult{})
 }
