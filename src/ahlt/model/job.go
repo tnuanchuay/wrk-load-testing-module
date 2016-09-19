@@ -13,12 +13,14 @@ import (
 
 type Job struct{
 	gorm.Model
-	Name          string
-	RequestUrl    string
-	RequestMethod string
-	Label         string
-	Testset       uint
-	Load          string
+	Name          	string
+	TestError	int
+	ExitInterrupt	bool
+	RequestUrl    	string
+	RequestMethod 	string
+	Label         	string
+	Testset       	uint
+	Load          	string
 	WrkResult	[]WrkResult
 }
 
@@ -73,6 +75,11 @@ func (j *Job) RunWrk(ts Testcase, label, scriptFile string, db *gorm.DB){
 	wrk := WrkResult{}
 	wrk.SetData(url, out)
 	wrk.JobID = j.ID
+
+	if wrk.IsError {
+		j.TestError = j.TestError + 1
+	}
+
 	j.WrkResult = append(j.WrkResult, wrk)
 }
 

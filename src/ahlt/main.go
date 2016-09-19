@@ -9,6 +9,10 @@ import (
 	"ahlt/view-controller"
 	"fmt"
 	"sync"
+	"time"
+	"github.com/googollee/go-socket.io"
+	"log"
+	"strconv"
 )
 
 func main() {
@@ -21,6 +25,9 @@ func main() {
 
 	initializeModel(db)
 	initializeTestset(db)
+	initializeTestset(db)
+
+	var jobProgress map[uint]float64 = make(map[uint]float64)
 	var wrkChannel = make(chan *model.Job, 100)
 
 	iris.Config.IsDevelopment = true
@@ -28,9 +35,18 @@ func main() {
 	iris.Static("/assets", "./static/assets", 1)
 
 	iris.Get("/", func(ctx *iris.Context){
+		ctx.Redirect("/run")
+	})
+
+	iris.Get("/run", func(ctx *iris.Context){
 		home := view_controller.Home{}.GetViewControl(db)
 		fmt.Println(home)
 		ctx.Render("home.html", home)
+	})
+
+	iris.Get("/result", func(ctx *iris.Context){
+		resultViewControl := view_controller.Result{}.GetViewControl(db)
+		ctx.Render("result.html", resultViewControl)
 	})
 
 	iris.Post("/wrk", func(ctx *iris.Context){
@@ -51,10 +67,41 @@ func main() {
 		job.Testset = testSet.ID
 
 		job.KeyValueToLoad(keys, values)
+		job.ExitInterrupt = true
 		db.Create(&job)
-
+		jobProgress[job.ID] = 1;
 		wrkChannel <- &job
+		ctx.Redirect("/")
 	})
+
+	server, err := socketio.NewServer(nil)
+	if err != nil {
+		log.Fatal(err)
+		os.Exit(-1)
+	}
+
+	server.On("connection", func(so socketio.Socket){
+		so.Join("real-time")
+		server.On("get-progress", func(msg string){
+			i, _ := strconv.Atoi(msg)
+			progress := jobProgress[uint(i)]
+
+			var job model.Job
+			db.Find(&job, "id = ?", i)
+
+			if progress == 0{
+				server.BroadcastTo("real-time", "_" + strconv.Itoa(int(i)), 100.00)
+			}else {
+				server.BroadcastTo("real-time", "_" + strconv.Itoa(int(i)), fmt.Sprintf("%.2f",progress))
+			}
+		})
+	})
+
+	server.On("error", func(so socketio.Socket, err error){
+		log.Fatal(err)
+	})
+
+
 
 	go func(){
 		wg := sync.WaitGroup{}
@@ -66,15 +113,21 @@ func main() {
 					var testset model.Testset
 					db.Find(&testset, "id = ?", job.Testset).Related(&testset.Testcase)
 					scriptFile := job.GenerateScript(job.Name)
-					for _, testcase := range testset.Testcase{
+					for i, testcase := range testset.Testcase{
 						job.RunWrk(testcase, "time", scriptFile, db)
-
+						jobProgress[job.ID] = float64(i+1) / float64(len(testset.Testcase)) *100.0
+						server.BroadcastTo("real-time", "_" + strconv.Itoa(int(job.ID)), fmt.Sprintf("%.2f",jobProgress[job.ID]))
+						time.Sleep(10 * time.Second)
 					}
+					job.ExitInterrupt = false
 					db.Save(&job)
 				}()
 			}
 		}
 	}()
+
+	iris.Handle(iris.MethodGet, "/socket.io/", iris.ToHandler(server))
+	iris.Handle(iris.MethodPost, "/socket.io/", iris.ToHandler(server))
 
 	iris.Listen(":2559")
 }
