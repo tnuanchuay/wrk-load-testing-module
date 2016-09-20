@@ -16,6 +16,7 @@ type Job struct{
 	Name          	string
 	TestError	int
 	ExitInterrupt	bool
+	Complete	bool
 	RequestUrl    	string
 	RequestMethod 	string
 	Label         	string
@@ -39,7 +40,7 @@ func (r *Job) KeyValueToLoad(keys, values []string){
 
 
 
-func (j *Job) RunWrk(ts Testcase, label, scriptFile string, db *gorm.DB){
+func (j *Job) RunWrk(ts Testcase, label, scriptFile string, db *gorm.DB)bool{
 	t := ts.Thread
 	c := ts.Connection
 	d := ts.Duration
@@ -51,9 +52,9 @@ func (j *Job) RunWrk(ts Testcase, label, scriptFile string, db *gorm.DB){
 
 	fmt.Println("label", label)
 	if label == "time" {
-		j.Label = j.Label + "," + d
+		j.Label = j.Label + d + ","
 	}else{
-		j.Label = j.Label + "," +c
+		j.Label = j.Label + c + ","
 	}
 
 	fmt.Println(command.Args)
@@ -80,7 +81,10 @@ func (j *Job) RunWrk(ts Testcase, label, scriptFile string, db *gorm.DB){
 		j.TestError = j.TestError + 1
 	}
 
+	wrk.TestcaseID = ts.ID
+
 	j.WrkResult = append(j.WrkResult, wrk)
+	return wrk.IsError
 }
 
 func (j *Job) GenerateScript(filename string)string{

@@ -32,8 +32,8 @@ type WrkResult struct {
 	SocketErrors_Read	int
 	SocketErrors_Write	int
 	SocketErrors_Timeout	int
-	RawOutput	string
 	Non2xx3xx	int
+	TestcaseID		uint
 }
 
 func (wrkResult *WrkResult) SetData(url, out string){
@@ -44,7 +44,6 @@ func (wrkResult *WrkResult) SetData(url, out string){
 	wrkResult.SetRequestPerSec(out)
 	wrkResult.SetRequests(out)
 	wrkResult.SetTransferPerSec(out)
-	wrkResult.SetRawOutput(out)
 	wrkResult.SetLatency(out)
 	wrkResult.SetReqPerSec(out)
 	wrkResult.SetTotalTransfer(out)
@@ -125,10 +124,6 @@ func (t *WrkResult) SetTransferPerSec(s string){
 		t.TransferPerSec, _ = si.SIToFloat(splitedTextTps[len(splitedTextTps) - 1])
 		fmt.Println("t.TransferPerSec", t.TransferPerSec)
 	}
-}
-
-func (t *WrkResult) SetRawOutput(s string){
-	t.RawOutput = s
 }
 
 func (t *WrkResult) SetRequestPerSec(s string){

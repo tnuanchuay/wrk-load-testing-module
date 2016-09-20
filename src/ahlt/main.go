@@ -25,7 +25,8 @@ func main() {
 
 	initializeModel(db)
 	initializeTestset(db)
-	initializeTestset(db)
+
+	db.Find(&model.Job{}, "complete = ?", false).Update("exit_interrupt", true)
 
 	var jobProgress map[uint]float64 = make(map[uint]float64)
 	var wrkChannel = make(chan *model.Job, 100)
@@ -46,7 +47,18 @@ func main() {
 
 	iris.Get("/result", func(ctx *iris.Context){
 		resultViewControl := view_controller.Result{}.GetViewControl(db)
-		ctx.Render("result.html", resultViewControl)
+		ctx.Render("job.html", resultViewControl)
+	})
+
+	iris.Get("/result/:id", func(ctx *iris.Context){
+		stringId := ctx.Param("id")
+		intId, _ := strconv.Atoi(stringId)
+		resultJobViewControl := view_controller.JobResult{}.GetJobViewControl(db, uint(intId))
+		if resultJobViewControl == nil{
+			ctx.Redirect("/result")
+		}else{
+			ctx.Render("result.html", resultJobViewControl)
+		}
 	})
 
 	iris.Post("/wrk", func(ctx *iris.Context){
@@ -67,7 +79,10 @@ func main() {
 		job.Testset = testSet.ID
 
 		job.KeyValueToLoad(keys, values)
-		job.ExitInterrupt = true
+
+		job.ExitInterrupt = false
+		job.Complete = false
+
 		db.Create(&job)
 		jobProgress[job.ID] = 1;
 		wrkChannel <- &job
@@ -90,9 +105,17 @@ func main() {
 			db.Find(&job, "id = ?", i)
 
 			if progress == 0{
-				server.BroadcastTo("real-time", "_" + strconv.Itoa(int(i)), 100.00)
+				server.BroadcastTo("real-time", "_" + strconv.Itoa(int(job.ID)),
+					map[string]interface{}{
+						"rx":100,
+						"ok":true,
+					})
 			}else {
-				server.BroadcastTo("real-time", "_" + strconv.Itoa(int(i)), fmt.Sprintf("%.2f",progress))
+				server.BroadcastTo("real-time", "_" + strconv.Itoa(int(job.ID)),
+					map[string]interface{}{
+						"rx":fmt.Sprintf("%.2f",jobProgress[job.ID]),
+						"ok":true,
+					})
 			}
 		})
 	})
@@ -100,8 +123,6 @@ func main() {
 	server.On("error", func(so socketio.Socket, err error){
 		log.Fatal(err)
 	})
-
-
 
 	go func(){
 		wg := sync.WaitGroup{}
@@ -114,11 +135,20 @@ func main() {
 					db.Find(&testset, "id = ?", job.Testset).Related(&testset.Testcase)
 					scriptFile := job.GenerateScript(job.Name)
 					for i, testcase := range testset.Testcase{
-						job.RunWrk(testcase, "time", scriptFile, db)
+						ok := !job.RunWrk(testcase, "con", scriptFile, db)
 						jobProgress[job.ID] = float64(i+1) / float64(len(testset.Testcase)) *100.0
-						server.BroadcastTo("real-time", "_" + strconv.Itoa(int(job.ID)), fmt.Sprintf("%.2f",jobProgress[job.ID]))
+
+						server.BroadcastTo("real-time", "_" + strconv.Itoa(int(job.ID)),
+							map[string]interface{}{
+								"rx":fmt.Sprintf("%.2f",jobProgress[job.ID]),
+								"ok":ok,
+							})
+
+
+						db.Save(&job)
 						time.Sleep(10 * time.Second)
 					}
+					job.Complete = true
 					job.ExitInterrupt = false
 					db.Save(&job)
 				}()
