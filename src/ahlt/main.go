@@ -13,6 +13,8 @@ import (
 	"github.com/googollee/go-socket.io"
 	"log"
 	"strconv"
+	"runtime"
+	"ahlt/unit/si"
 )
 
 func main() {
@@ -61,9 +63,47 @@ func main() {
 		}
 	})
 
+	iris.Get("/result/:id/del", func(ctx *iris.Context){
+		id := ctx.Param("id")
+		db.Delete(&model.Job{}, "id = ?", id)
+		ctx.Redirect("/result")
+	})
+
 	iris.Get("/testset", func(ctx *iris.Context){
 		testsetPage := view_controller.TestsetPage{}.GetPageViewControl(db)
 		ctx.Render("testset.html", testsetPage)
+	})
+
+	iris.Get("/testset/new", func(ctx *iris.Context){
+		ctx.Render("testset-new.html", nil)
+	})
+
+	iris.Post("/testset/new", func(ctx *iris.Context){
+		name := string(ctx.FormValue("name"))
+		cpu := runtime.NumCPU()
+		duration := string(ctx.FormValue("duration"))
+		connections := ctx.FormValues("connection")
+
+		var testset model.Testset
+		testset.Name = name
+
+		for _, connection := range connections{
+			var testcase model.Testcase
+			testcase.Duration = duration
+			testcase.Connection = connection
+			floatConnection, _ := si.SIToFloat(connection)
+			fmt.Println("int connection", int(floatConnection))
+			if int(floatConnection) <= cpu{
+				testcase.Thread = strconv.Itoa(int(floatConnection))
+			}else{
+				testcase.Thread = strconv.Itoa(cpu)
+			}
+
+			testset.Testcase = append(testset.Testcase, testcase)
+		}
+
+		db.Create(&testset)
+		ctx.Redirect("/testset")
 	})
 
 	iris.Post("/wrk", func(ctx *iris.Context){
