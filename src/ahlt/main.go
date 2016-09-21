@@ -61,6 +61,11 @@ func main() {
 		}
 	})
 
+	iris.Get("/testset", func(ctx *iris.Context){
+		testsetPage := view_controller.TestsetPage{}.GetPageViewControl(db)
+		ctx.Render("testset.html", testsetPage)
+	})
+
 	iris.Post("/wrk", func(ctx *iris.Context){
 		name := string(ctx.FormValue("name"))
 		url := string(ctx.FormValue("url"))
