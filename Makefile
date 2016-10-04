@@ -9,9 +9,9 @@ clean:
 	$(RM) $(BIN)
 	$(shell git reset --hard)
 depen:
-	#git  clone https://github.com/wg/wrk.git
-	#$(shell cd wrk; make;)
-	#$(shell ln -s wrk /bin/)
+	git  clone https://github.com/wg/wrk.git
+	$(shell cd wrk; make;)
+	$(shell cd wrk; cp wrk /bin/wrk)
 	@GOPATH=$(GOPATH) $(GO) get -u github.com/kataras/iris/iris
 	@GOPATH=$(GOPATH) $(GO) get github.com/googollee/go-socket.io
 	@GOPATH=$(GOPATH) $(GO) get github.com/PuerkitoBio/goquery
