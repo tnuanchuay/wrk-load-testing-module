@@ -11,9 +11,9 @@ clean:
 	$(RM) /bin/wrk
 	$(RM) -rf ./wrk	
 depen:
-	@$(SHELL) -c " git clone https://github.com/wg/wrk.git"
-	@$(SHELL) -c "cd wrk && make"
-	@$(SHELL) -c "cd wrk && cp wrk /bin/"
+	@$(SHELL) -c "git clone https://github.com/wg/wrk.git"
+	@$(SHELL) -c "cd wrk && sudo make"
+	@$(SHELL) -c "cd wrk && sudo cp wrk /bin/"
 	@echo "Download Golang Library"
 	@GOPATH=$(GOPATH) $(GO) get -u github.com/kataras/iris/iris
 	@GOPATH=$(GOPATH) $(GO) get github.com/googollee/go-socket.io
