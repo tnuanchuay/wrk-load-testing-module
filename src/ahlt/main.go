@@ -252,8 +252,11 @@ func main() {
 					job.Complete = true
 					job.ExitInterrupt = false
 					db.Save(&job)
+					wg.Done()
 				}()
 			}
+
+			wg.Wait()
 		}
 	}()
 
