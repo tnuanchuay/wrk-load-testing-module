@@ -168,10 +168,11 @@ func main() {
 		db.Find(&job, "id = ?", sId)
 
 		job.ID = 0
-		db.Create(&job)
-
 		job.ExitInterrupt = false
 		job.Complete = false
+
+		db.Create(&job)
+		
 		jobProgress[job.ID] = 1;
 
 		wrkChannel <- &job
