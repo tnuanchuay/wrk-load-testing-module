@@ -43,7 +43,6 @@ func main() {
 
 	iris.Get("/run", func(ctx *iris.Context){
 		home := view_controller.Home{}.GetViewControl(db)
-		fmt.Println(home)
 		ctx.Render("home.html", home)
 	})
 
@@ -74,11 +73,29 @@ func main() {
 		ctx.Render("testset.html", testsetPage)
 	})
 
-	iris.Get("/testset/new", func(ctx *iris.Context){
-		ctx.Render("testset-new.html", nil)
+	iris.Get("/testset/:id", func(ctx *iris.Context){
+		stringId := ctx.Param("id")
+
+		if stringId == "new"{
+			ctx.Render("testset-new.html", nil)
+			return;
+		}
+
+		id, err := strconv.Atoi(stringId)
+		if err != nil{
+			ctx.Redirect("/testset")
+			return;
+		}
+
+		var testset model.Testset
+		db.Find(&testset, "id = ?", id).Related(&testset.Testcase)
+
+		var vc = view_controller.EditTestsetPage{Testset:testset}
+
+		ctx.Render("testset-edit.html", vc)
 	})
 
-	iris.Post("/testset/new", func(ctx *iris.Context){
+	iris.Post("/testset", func(ctx *iris.Context){
 		name := string(ctx.FormValue("name"))
 		cpu := runtime.NumCPU()
 		duration := string(ctx.FormValue("duration"))
@@ -92,7 +109,6 @@ func main() {
 			testcase.Duration = duration
 			testcase.Connection = connection
 			floatConnection, _ := si.SIToFloat(connection)
-			fmt.Println("int connection", int(floatConnection))
 			if int(floatConnection) <= cpu{
 				testcase.Thread = strconv.Itoa(int(floatConnection))
 			}else{
@@ -103,6 +119,39 @@ func main() {
 		}
 
 		db.Create(&testset)
+		ctx.Redirect("/testset")
+	})
+
+	iris.Post("/testset/:id/edit", func(ctx *iris.Context){
+		name := string(ctx.FormValue("name"))
+		cpu := runtime.NumCPU()
+		duration := string(ctx.FormValue("duration"))
+		connections := ctx.FormValues("connection")
+		id := string(ctx.FormValue("id"))
+
+		var testset model.Testset
+		intId, _ := strconv.Atoi(id)
+		uIntId := uint(intId)
+		db.Find(&testset, "id = ?", uIntId)
+		testset.Name = name
+
+		db.Delete(&model.Testcase{}, "testset_id = ?", uIntId)
+
+		for _, connection := range connections{
+			var testcase model.Testcase
+			testcase.Duration = duration
+			testcase.Connection = connection
+			floatConnection, _ := si.SIToFloat(connection)
+			if int(floatConnection) <= cpu{
+				testcase.Thread = strconv.Itoa(int(floatConnection))
+			}else{
+				testcase.Thread = strconv.Itoa(cpu)
+			}
+
+			testset.Testcase = append(testset.Testcase, testcase)
+		}
+
+		db.Save(&testset)
 		ctx.Redirect("/testset")
 	})
 

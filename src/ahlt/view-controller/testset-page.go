@@ -9,6 +9,10 @@ type(
 	TestsetPage	struct {
 		Testset		[]model.Testset
 	}
+
+	EditTestsetPage struct {
+		Testset		model.Testset
+	}
 )
 
 func (TestsetPage) GetPageViewControl(db *gorm.DB)(*TestsetPage){

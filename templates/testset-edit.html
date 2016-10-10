@@ -83,7 +83,7 @@
                         <span class="icon-bar"></span>
                         <span class="icon-bar"></span>
                     </button>
-                    <a class="navbar-brand" href="#">Testset - New</a>
+                    <a class="navbar-brand" href="#">Testset - {{.Testset.Name}}</a>
                 </div>
             </div>
         </nav>
@@ -91,10 +91,14 @@
 
         <div class="content">
             <div class="container-fluid">
-                <form action="/testset" method="post">
+                <form action="/testset/{{.Testset.ID}}/edit" method="post">
+                    <input type="hidden" id="id" name="id">
                     <div class="col-sm-12">
                         <div class="pull-right ">
-                            <button class="btn btn-success" type="submit">Create Testset</button>
+                            <button class="btn btn-warning" type="submit">Save Testset</button>
+                            <a href="/testset/{{.Testset.ID}}/del">
+                                <button class="btn btn-danger" type="button">Delete</button>
+                            </a>
                         </div>
                     </div>
                     <div class="col-sm-6">
@@ -157,7 +161,38 @@
             $(`#tr_${id}`).remove();
     }
 
+    var testset = JSON.parse(`{{ .Testset }}`);
+
     $(document).ready(function(){
+
+        $("#name").val(testset.Name);
+        $("#id").val(testset.ID);
+        console.log(testset);
+        for(var i = 0 ; i < testset.Testcase.length ; i++){
+            if(i == 0){
+                $("#duration").val(testset.Testcase[i].Duration);
+            }
+
+            iterationCounter++;
+            $("#tbody-case").append(`
+                <tr id="tr_${iterationCounter}">
+                    <td>
+                        <label for="button_${iterationCounter}">Case</label>
+                    </td>
+                    <td>
+                        <input id="input_${iterationCounter}" type="text" class="form-control" name="connection"/>
+                    </td>
+                    <td>
+                        <div class="pull-right">
+                        <button id="button_${iterationCounter}" type="button" class="btn btn-danger" onclick="remove('${iterationCounter}')"><i class="pe-7s-close"></i> Delete</button>
+                        </div>
+                    </td>
+                </tr>
+            `);
+
+            $(`#input_${iterationCounter}`).val(testset.Testcase[i].Connection);
+        }
+
         $("#add").click(function(){
             iterationCounter++;
             $("#tbody-case").append(`
