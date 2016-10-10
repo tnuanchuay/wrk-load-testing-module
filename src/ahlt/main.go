@@ -122,6 +122,13 @@ func main() {
 		ctx.Redirect("/testset")
 	})
 
+	iris.Get("/testset/:id/del", func(ctx *iris.Context){
+		id := string(ctx.Param("id"))
+		intId, _ := strconv.Atoi(id)
+		db.Delete(&model.Testset{}, "id = ?", uint(intId)).Related(&model.Testcase{})
+		ctx.Redirect("/testset")
+	})
+
 	iris.Post("/testset/:id/edit", func(ctx *iris.Context){
 		name := string(ctx.FormValue("name"))
 		cpu := runtime.NumCPU()
