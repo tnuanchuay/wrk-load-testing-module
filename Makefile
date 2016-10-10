@@ -3,17 +3,18 @@ BIN=./ahlt
 SRC=src/ahlt/main.go
 GOPATH=$(shell pwd)
 
-all: clean depen install
+all: clean golib build install
 
 clean: 
 	$(RM) $(BIN)
 	$(RM) -rf ./src/github.com
 	$(RM) /bin/wrk
 	$(RM) -rf ./wrk	
-depen:
+wrk:
 	@$(SHELL) -c "git clone https://github.com/wg/wrk.git"
-	@$(SHELL) -c "cd wrk && sudo make"
-	@$(SHELL) -c "cd wrk && sudo cp wrk /bin/"
+	@$(SHELL) -c "cd wrk && sudo make && sudo install -m 0755 wrk /bin"
+
+golib:
 	@echo "Download Golang Library"
 	@GOPATH=$(GOPATH) $(GO) get -u github.com/kataras/iris/iris
 	@GOPATH=$(GOPATH) $(GO) get github.com/googollee/go-socket.io
@@ -23,7 +24,10 @@ depen:
 	@GOPATH=$(GOPATH) $(GO) get -u github.com/kataras/go-template
 	@GOPATH=$(GOPATH) $(GO) get -u github.com/flosch/pongo2
 
-install: $(SRC)
+build: $(SRC)
 	@echo "Build"
 	@GOPATH=$(GOPATH) $(GO) build -o $(BIN) $+
+
+install: 
+	sudo install -m 0755 ahlt /bin
 
