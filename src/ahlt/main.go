@@ -162,6 +162,22 @@ func main() {
 		ctx.Redirect("/testset")
 	})
 
+	iris.Get("/rerun/:id", func(ctx *iris.Context){
+		sId := string(ctx.Param("id"))
+		var job model.Job
+		db.Find(&job, "id = ?", sId)
+
+		job.ID = 0
+		db.Create(&job)
+
+		job.ExitInterrupt = false
+		job.Complete = false
+		jobProgress[job.ID] = 1;
+
+		wrkChannel <- &job
+		ctx.Redirect("/result")
+	})
+
 	iris.Post("/wrk", func(ctx *iris.Context){
 		name := string(ctx.FormValue("name"))
 		url := string(ctx.FormValue("url"))
