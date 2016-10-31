@@ -207,6 +207,10 @@ func main() {
 		ctx.Redirect("/")
 	})
 
+	iris.Get("/realtime", func(ctx *iris.Context){
+		ctx.Render("realtime.html", nil)
+	})
+
 	server, err := socketio.NewServer(nil)
 	if err != nil {
 		log.Fatal(err)
@@ -236,6 +240,8 @@ func main() {
 					})
 			}
 		})
+
+
 	})
 
 	server.On("error", func(so socketio.Socket, err error){
