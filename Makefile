@@ -7,12 +7,6 @@ all: clean golib build install
 
 clean: 
 	$(RM) $(BIN)
-	$(RM) -rf ./src/github.com
-	$(RM) /bin/wrk
-	$(RM) -rf ./wrk	
-wrk:
-	@$(SHELL) -c "git clone https://github.com/wg/wrk.git"
-	@$(SHELL) -c "cd wrk && sudo make && sudo install -m 0755 wrk /bin"
 
 golib:
 	@echo "Download Golang Library"
@@ -27,7 +21,4 @@ golib:
 build: $(SRC)
 	@echo "Build"
 	@GOPATH=$(GOPATH) $(GO) build -o $(BIN) $+
-
-install: 
-	sudo install -m 0755 ahlt /bin
 
