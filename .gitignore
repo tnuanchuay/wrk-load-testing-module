@@ -7,5 +7,4 @@ src/gopkg.in
 bin
 pkg
 lua
-ahlt
 wrk
