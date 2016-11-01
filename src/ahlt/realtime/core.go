@@ -25,11 +25,19 @@ func (j *WrkEngine) GetState() bool{
 }
 
 func (j *WrkEngine) SetSamplingTime(time int){
-	j.samplingTime = time
+	if time == 0{
+		j.samplingTime = 1
+	}else{
+		j.samplingTime = time
+	}
 }
 
 func (j *WrkEngine) SetConcurrency(concurrent int){
-	j.Concurrency = concurrent
+	if concurrent < runtime.NumCPU(){
+		j.Concurrency = runtime.NumCPU()
+	}else{
+		j.Concurrency = concurrent
+	}
 }
 
 func (j *WrkEngine) SetUrl(url string){
@@ -42,22 +50,28 @@ func (*WrkEngine)New()*WrkEngine{
 
 func (j *WrkEngine) Stop(){
 	j.status = false;
+	j.samplingTime = 0
+	j.Concurrency = runtime.NumCPU()
+	j.url = ""
 }
 
 func (j *WrkEngine) Start(){
 	j.status = true
-	for j.status {
-		j.wg.Add(1)
-		go func(){
-			var testcase model.Testcase
-			testcase.Thread = strconv.Itoa(runtime.NumCPU())
-			testcase.Connection = strconv.Itoa(j.Concurrency)
-			testcase.Duration = strconv.Itoa(j.samplingTime)
-
-			result := j.RunForResult(testcase, j.url)
-			j.resultJob = append(j.resultJob, *result)
-		}()
-	}
+	go func() {
+		for j.status {
+			j.wg.Add(1)
+			go func() {
+				var testcase model.Testcase
+				testcase.Thread = strconv.Itoa(runtime.NumCPU())
+				testcase.Connection = strconv.Itoa(j.Concurrency)
+				testcase.Duration = strconv.Itoa(j.samplingTime)
+				result := j.RunForResult(testcase, j.url)
+				j.resultJob = append(j.resultJob, *result)
+				j.wg.Done()
+			}()
+			j.wg.Wait()
+		}
+	}()
 }
 
 func (*WrkEngine) RunForResult(ts model.Testcase, url string) *model.WrkResult{
@@ -83,7 +97,7 @@ func (*WrkEngine) RunForResult(ts model.Testcase, url string) *model.WrkResult{
 	}()
 	command.Start()
 	command.Wait()
-	fmt.Println(out)
+	//fmt.Println(out)
 
 	wrkResult := model.WrkResult{}
 	wrkResult.SetData(url, out)

@@ -4,7 +4,7 @@ import (
 	"regexp"
 	"strings"
 	"strconv"
-	"fmt"
+	//"fmt"
 	"ahlt/unit/si"
 	"ahlt/unit/mtime"
 	"github.com/jinzhu/gorm"
@@ -81,7 +81,7 @@ func (t *WrkResult) SetTotalTransfer(s string){
 		textTotalTransfer := result[0][0]
 		splitedTextTotalTransfer := strings.Fields(textTotalTransfer)
 		t.TotalTransfer,_ = si.SIToFloat(splitedTextTotalTransfer[1])
-		fmt.Println("t.TotalTransfer", t.TotalTransfer)
+		//fmt.Println("t.TotalTransfer", t.TotalTransfer)
 	}
 }
 
@@ -122,7 +122,7 @@ func (t *WrkResult) SetTransferPerSec(s string){
 		textTps := result[0][0]
 		splitedTextTps := strings.Fields(textTps)
 		t.TransferPerSec, _ = si.SIToFloat(splitedTextTps[len(splitedTextTps) - 1])
-		fmt.Println("t.TransferPerSec", t.TransferPerSec)
+		//fmt.Println("t.TransferPerSec", t.TransferPerSec)
 	}
 }
 
@@ -135,7 +135,7 @@ func (t *WrkResult) SetRequestPerSec(s string){
 		textRps := result[0][0]
 		splitedTextRps := strings.Fields(textRps)
 		t.RequestPerSec, _ = strconv.ParseFloat(splitedTextRps[len(splitedTextRps) - 1], 64)
-		fmt.Println("t.RequestPerSec", t.RequestPerSec)
+		//fmt.Println("t.RequestPerSec", t.RequestPerSec)
 	}
 }
 
@@ -149,7 +149,7 @@ func (t *WrkResult) SetRequests(s string){
 		textReq := result[0][0]
 		splitedTestReq := strings.Fields(textReq)[0]
 		t.Requests, _ = strconv.Atoi(splitedTestReq)
-		fmt.Println("t.Requests", t.Requests)
+		//fmt.Println("t.Requests", t.Requests)
 	}
 }
 
@@ -164,7 +164,7 @@ func (t *WrkResult) SetDuration(s string){
 		textTime = strings.Replace(textTime, ",", "", -1)
 		splitedTextTime := strings.Fields(textTime)[2]
 		t.Duration, _ = mtime.StringToFloat(splitedTextTime)
-		fmt.Println("t.duration", t.Duration)
+		//fmt.Println("t.duration", t.Duration)
 	}
 }
 
@@ -179,7 +179,7 @@ func (t *WrkResult) SetThread(s string){
 		splitedTextThread := strings.Fields(textThread)[0]
 		threadNum, _ := si.SIToFloat(splitedTextThread)
 		t.Thread = int(threadNum)
-		fmt.Println("t.Thread", t.Thread)
+		//fmt.Println("t.Thread", t.Thread)
 	}
 }
 
@@ -194,6 +194,6 @@ func (t *WrkResult) SetConnection(s string){
 		splitedTextConnection := strings.Fields(textConnection)[0]
 		threadNum, _ := si.SIToFloat(splitedTextConnection)
 		t.Connection = int(threadNum)
-		fmt.Println("t.Connection", t.Connection)
+		//fmt.Println("t.Connection", t.Connection)
 	}
 }

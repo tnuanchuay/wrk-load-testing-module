@@ -5,9 +5,10 @@ import(
 	"encoding/json"
 )
 type Request struct{
-	RequestToStart	bool	`json:"e"`
+	EngineStatus	bool	`json:"e"`
 	SamplingTime	int	`json:"d"`
 	Concurrency	int	`json:"c"`
+	Url		string	`json:"url"`
 }
 
 func (r * Request) FromJSON(j string){

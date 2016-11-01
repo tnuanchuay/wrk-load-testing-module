@@ -179,12 +179,12 @@
         });
 
         c.on('change', () => {
-            protocol.c = c.val();
+            protocol.c = parseInt(c.val());
             socket.emit('realtime', JSON.stringify(protocol));
         });
 
         d.on('change', () => {
-            protocol.d = d.val();
+            protocol.d = parseInt(d.val());
             socket.emit('realtime', JSON.stringify(protocol));
         });
 

@@ -19,7 +19,7 @@ import (
 )
 
 func main() {
-	//var realtimeWrkEngine realtime.WrkEngine
+	var realtimeWrkEngine realtime.WrkEngine
 	db, err := gorm.Open("sqlite3", "database.db")
 	if err != nil {
 		panic("Cannot open database")
@@ -249,6 +249,19 @@ func main() {
 			fmt.Println(msg)
 			request.FromJSON(msg)
 			fmt.Println(request)
+
+			if (realtimeWrkEngine.GetState() != request.EngineStatus) && (request.EngineStatus == true) {
+				realtimeWrkEngine.SetConcurrency(request.Concurrency)
+				realtimeWrkEngine.SetSamplingTime(request.SamplingTime)
+				realtimeWrkEngine.SetUrl(request.Url)
+				realtimeWrkEngine.Start()
+				fmt.Print("set!!")
+			}else if (realtimeWrkEngine.GetState() == request.EngineStatus) && (request.EngineStatus == true){
+				realtimeWrkEngine.SetConcurrency(request.Concurrency)
+				realtimeWrkEngine.SetSamplingTime(request.SamplingTime)
+			}else if request.EngineStatus == false {
+				realtimeWrkEngine.Stop()
+			}
 
 		})
 	})
