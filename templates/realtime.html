@@ -97,6 +97,9 @@
         <div class="content">
             <div class="container-fluid">
                 <div class="row">
+                    <input type="text" class="form-control" id="url">
+                </div>
+                <div class="row">
                     <h2 class="pull-right">
                         Start <input type="checkbox" id="status" data-toggle="toggle">
                     </h2>
@@ -138,16 +141,26 @@
 <script src="/assets/js/bootstrap-notify.js"></script>
 
 <!--  Google Maps Plugin    -->
-<script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?sensor=false"></script>
 <script src="/assets/js/bootstrap-toggle.min.js"></script>
 <!-- Light Bootstrap Table Core javascript and methods for Demo purpose -->
 <script src="/assets/js/light-bootstrap-dashboard.js"></script>
+<script src="/assets/js/socket.io-1.4.5.js"></script>
 <script>
+    var socket = io();
+    var protocol = {
+        e : false,
+        c : 0,
+        d : 0,
+        url : "",
+    };
+
     $(document).ready(function(){
         var cc = $('#cc');
         var c = $('#c');
         var dd = $('#dd');
         var d = $('#d');
+        var status = $('#status');
+        var url = $('#url');
 
         c.val(0);
         d.val(0);
@@ -166,12 +179,21 @@
         });
 
         c.on('change', () => {
-
+            protocol.c = c.val();
+            socket.emit('realtime', JSON.stringify(protocol));
         });
 
         d.on('change', () => {
+            protocol.d = d.val();
+            socket.emit('realtime', JSON.stringify(protocol));
+        });
 
-        })
+        status.on('change', () =>{
+            let s = status.is(':checked');
+            protocol.e = s;
+            protocol.url = url.val();
+            socket.emit('realtime', JSON.stringify(protocol));
+        });
     });
 </script>
 </html>

@@ -2,7 +2,6 @@ package main
 
 import (
 	"github.com/jinzhu/gorm"
-	"os"
 	_ "github.com/jinzhu/gorm/dialects/sqlite"
 	"github.com/kataras/iris"
 	"ahlt/model"
@@ -15,9 +14,12 @@ import (
 	"strconv"
 	"runtime"
 	"ahlt/unit/si"
+	"ahlt/realtime"
+	"os"
 )
 
 func main() {
+	//var realtimeWrkEngine realtime.WrkEngine
 	db, err := gorm.Open("sqlite3", "database.db")
 	if err != nil {
 		panic("Cannot open database")
@@ -172,7 +174,7 @@ func main() {
 		job.Complete = false
 
 		db.Create(&job)
-		
+
 		jobProgress[job.ID] = 1;
 
 		wrkChannel <- &job
@@ -218,6 +220,7 @@ func main() {
 	}
 
 	server.On("connection", func(so socketio.Socket){
+		fmt.Println("connected")
 		so.Join("real-time")
 		server.On("get-progress", func(msg string){
 			i, _ := strconv.Atoi(msg)
@@ -241,7 +244,13 @@ func main() {
 			}
 		})
 
+		server.On("realtime", func(msg string){
+			var request realtime.Request
+			fmt.Println(msg)
+			request.FromJSON(msg)
+			fmt.Println(request)
 
+		})
 	})
 
 	server.On("error", func(so socketio.Socket, err error){
