@@ -249,8 +249,7 @@ func main() {
 				realtimeWrkEngine.SetConcurrency(request.Concurrency)
 				realtimeWrkEngine.SetSamplingTime(request.SamplingTime)
 				realtimeWrkEngine.SetUrl(request.Url)
-				realtimeWrkEngine.Start()
-				fmt.Print("set!!")
+				realtimeWrkEngine.Start(c)
 			}else if (realtimeWrkEngine.GetState() == request.EngineStatus) && (request.EngineStatus == true){
 				realtimeWrkEngine.SetConcurrency(request.Concurrency)
 				realtimeWrkEngine.SetSamplingTime(request.SamplingTime)

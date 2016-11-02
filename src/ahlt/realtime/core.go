@@ -9,6 +9,7 @@ import (
 	"strings"
 	"os/exec"
 	"strconv"
+	"github.com/kataras/iris"
 )
 
 type WrkEngine struct{
@@ -55,7 +56,7 @@ func (j *WrkEngine) Stop(){
 	j.url = ""
 }
 
-func (j *WrkEngine) Start(){
+func (j *WrkEngine) Start(so iris.WebsocketConnection){
 	j.status = true
 	go func() {
 		for j.status {
@@ -70,9 +71,8 @@ func (j *WrkEngine) Start(){
 				j.wg.Done()
 			}()
 			j.wg.Wait()
-			//var result = j.resultJob[len(j.resultJob)-1]
-			//server.BroadcastTo("realtime", "data", map[srtring]interface{}{"c":result.RequestPerSec})
-			//(*socket).Emit("data", result.RequestPerSec)
+			var result = j.resultJob[len(j.resultJob)-1]
+			(so).Emit("data", result.RequestPerSec)
 		}
 	}()
 }

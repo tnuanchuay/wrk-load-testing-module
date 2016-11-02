@@ -147,11 +147,11 @@
 <script src="/assets/js/bootstrap-toggle.min.js"></script>
 <!-- Light Bootstrap Table Core javascript and methods for Demo purpose -->
 <script src="/assets/js/light-bootstrap-dashboard.js"></script>
-<script src="/assets/js/socket.io-1.4.5.js"></script>
+<script src="/iris-ws.js"></script>
 <script src="https://code.highcharts.com/highcharts.js"></script>
 <script src="https://code.highcharts.com/modules/exporting.js"></script>
 <script>
-    var socket = io();
+    var ws = new Ws("ws://127.0.0.1:2559/end_point");
     var protocol = {
         e : false,
         c : 0,
@@ -167,14 +167,16 @@
         var status = $('#status');
         var url = $('#url');
 
-        c.val(0);
-        d.val(0);
+        c.val(1);
+        d.val(1);
 
         cc.html("Concurrent : " + c.val());
         dd.html("Sampling Time : " + d.val());
 
         c.on("mousemove",() => {
             let val = c.val();
+            val = Math.round(val / 16.667);
+            val = Math.pow(10, val);
             cc.html("Concurrent : " + val);
         });
 
@@ -184,25 +186,24 @@
         });
 
         c.on('change', () => {
-            protocol.c = parseInt(c.val());
-            socket.emit('realtime', JSON.stringify(protocol));
+            let val = c.val();
+            val = Math.round(val / 16.667);
+            val = Math.pow(10, val);
+            protocol.c = val;
+            ws.Emit('realtime', JSON.stringify(protocol));
         });
 
         d.on('change', () => {
             protocol.d = parseInt(d.val());
-            socket.emit('realtime', JSON.stringify(protocol));
+            ws.Emit('realtime', JSON.stringify(protocol));
         });
 
         status.on('change', () =>{
             let s = status.is(':checked');
             protocol.e = s;
             protocol.url = url.val();
-            socket.emit('realtime', JSON.stringify(protocol));
+            ws.Emit('realtime', JSON.stringify(protocol));
         });
-    });
-
-    socket.on('data', (data)=>{
-        console.log(data)
     });
 
     $(function () {
@@ -223,16 +224,18 @@
 
                             // set up the updating of the chart each second
                             var series = this.series[0];
-                            setInterval(function () {
+                            ws.On('data', (data)=>{
+                                console.log(data)
                                 var x = (new Date()).getTime(), // current time
-                                    y = Math.random();
+                                    y = parseFloat(data);
                                 series.addPoint([x, y], true, true);
-                            }, 1000);
+                            });
+
                         }
                     }
                 },
                 title: {
-                    text: 'Live random data'
+                    text: 'Live Concurrency (request/second)'
                 },
                 xAxis: {
                     type: 'datetime',
