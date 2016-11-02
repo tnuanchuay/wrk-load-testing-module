@@ -137,13 +137,6 @@
 <!--  Checkbox, Radio & Switch Plugins -->
 <script src="/assets/js/bootstrap-checkbox-radio-switch.js"></script>
 
-<!--  Charts Plugin -->
-<script src="/assets/js/chartist.min.js"></script>
-
-<!--  Notifications Plugin    -->
-<script src="/assets/js/bootstrap-notify.js"></script>
-
-<!--  Google Maps Plugin    -->
 <script src="/assets/js/bootstrap-toggle.min.js"></script>
 <!-- Light Bootstrap Table Core javascript and methods for Demo purpose -->
 <script src="/assets/js/light-bootstrap-dashboard.js"></script>
@@ -204,6 +197,11 @@
             protocol.url = url.val();
             ws.Emit('realtime', JSON.stringify(protocol));
         });
+    });
+
+    ws.On("err", function(msg){
+        $('#status').bootstrapToggle('off');
+        console.log(msg);
     });
 
     $(function () {

@@ -72,7 +72,13 @@ func (j *WrkEngine) Start(so iris.WebsocketConnection){
 			}()
 			j.wg.Wait()
 			var result = j.resultJob[len(j.resultJob)-1]
-			(so).Emit("data", result.RequestPerSec)
+			if result.IsError {
+				j.status = false
+				(so).Emit("err", "err")
+			}else{
+				(so).Emit("data", result.RequestPerSec)
+			}
+
 		}
 	}()
 }
