@@ -70,6 +70,9 @@ func (j *WrkEngine) Start(){
 				j.wg.Done()
 			}()
 			j.wg.Wait()
+			//var result = j.resultJob[len(j.resultJob)-1]
+			//server.BroadcastTo("realtime", "data", map[srtring]interface{}{"c":result.RequestPerSec})
+			//(*socket).Emit("data", result.RequestPerSec)
 		}
 	}()
 }

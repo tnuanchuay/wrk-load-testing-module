@@ -132,10 +132,7 @@
 
 <!--  Notifications Plugin    -->
 <script src="/assets/js/bootstrap-notify.js"></script>
-<script src="/assets/js/socket.io-1.4.5.js"></script>
-
-<!--  Google Maps Plugin    -->
-<script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?sensor=false"></script>
+<script src="/iris-ws.js"></script>
 
 <!-- Light Bootstrap Table Core javascript and methods for Demo purpose -->
 <script src="/assets/js/light-bootstrap-dashboard.js"></script>
@@ -143,8 +140,7 @@
 <script>
     var data = JSON.parse(`{{ .Job }}`);
     var testset = JSON.parse(`{{ .Testset }}`);
-    var socket = io();
-
+    var ws = new Ws("ws://127.0.0.1:2559/end_point");
 
     function findTestSetById(id){
         for(var i = 0 ; i < testset.length ; i++){
@@ -170,6 +166,10 @@
             return;
         }
 
+        ws.On("h", function (msg) {
+           console.log(msg);
+        });
+
         for(var i = 0 ; i < data.length ; i++){
             const d = data[i];
 
@@ -187,19 +187,21 @@
                 </tr>
             `)
 
-            socket.on("_" + d.ID, function(rx){
+            ws.On("ROOM" + d.ID, function(msg){
+                console.log(msg);
+                var value = JSON.parse(msg);
                 var str = "";
-                if(rx.rx == "100.00"){
+                if(value.progress == "100.00"){
                     str = `<span class="label label-success">finished</span>`;
                 }else{
-                    str = `<span class="label label-primary">${rx.rx} %</span>`;
+                    str = `<span class="label label-primary">${value.progress} %</span>`;
                 }
 
                 if(d.TestError != 0){
                     str += `<span class="label label-danger"> ${d.TestError} Error</span>`;
                 }
 
-                if(d.ExitInterrupt && rx.rx == "100.0"){
+                if(d.ExitInterrupt && value.progress == "100.0"){
                     str = `<span class="label label-danger">Exit Interrupt</span>`;
                 }
 
@@ -208,7 +210,8 @@
 
 
             setTimeout(function(){
-                socket.emit("get-progress", ""+d.ID);
+                ws.Emit("get-progress", ""+d.ID);
+                console.log("asd")
             }, 300);
 
         }

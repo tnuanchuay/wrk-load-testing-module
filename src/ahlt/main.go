@@ -9,17 +9,17 @@ import (
 	"fmt"
 	"sync"
 	"time"
-	"github.com/googollee/go-socket.io"
-	"log"
 	"strconv"
 	"runtime"
 	"ahlt/unit/si"
-	"ahlt/realtime"
 	"os"
+	"ahlt/realtime"
+	"ahlt/ws"
 )
 
 func main() {
 	var realtimeWrkEngine realtime.WrkEngine
+	var sockets	ws.GroupSocket
 	db, err := gorm.Open("sqlite3", "database.db")
 	if err != nil {
 		panic("Cannot open database")
@@ -212,44 +212,39 @@ func main() {
 	iris.Get("/realtime", func(ctx *iris.Context){
 		ctx.Render("realtime.html", nil)
 	})
+	iris.Config.Websocket.Endpoint = "/end_point"
+	iris.Config.Websocket.WriteBufferSize = 10000
 
-	server, err := socketio.NewServer(nil)
-	if err != nil {
-		log.Fatal(err)
-		os.Exit(-1)
-	}
+	iris.Websocket.OnConnection(func (c iris.WebsocketConnection){
+		sockets.Sockets = append(sockets.Sockets, &c)
+		c.On("get-progress", func(msg string){
 
-	server.On("connection", func(so socketio.Socket){
-		fmt.Println("connected")
-		so.Join("real-time")
-		server.On("get-progress", func(msg string){
 			i, _ := strconv.Atoi(msg)
 			progress := jobProgress[uint(i)]
 
 			var job model.Job
 			db.Find(&job, "id = ?", i)
-
+			var interfaceValue map[string]interface{}
 			if progress == 0{
-				server.BroadcastTo("real-time", "_" + strconv.Itoa(int(job.ID)),
-					map[string]interface{}{
-						"rx":100,
-						"ok":true,
-					})
+				interfaceValue = map[string]interface{}{
+					"progress":100,
+					"ok":true,
+				};
 			}else {
-				server.BroadcastTo("real-time", "_" + strconv.Itoa(int(job.ID)),
-					map[string]interface{}{
-						"rx":fmt.Sprintf("%.2f",jobProgress[job.ID]),
+				interfaceValue = map[string]interface{}{
+						"progress":fmt.Sprintf("%.2f",jobProgress[job.ID]),
 						"ok":true,
-					})
+					}
 			}
+
+			c.Emit("ROOM" + strconv.Itoa(int(job.ID)), interfaceValue)
+			time.Sleep(10*time.Millisecond)
 		})
 
-		server.On("realtime", func(msg string){
+		c.On("realtime", func(msg string){
 			var request realtime.Request
 			fmt.Println(msg)
 			request.FromJSON(msg)
-			fmt.Println(request)
-
 			if (realtimeWrkEngine.GetState() != request.EngineStatus) && (request.EngineStatus == true) {
 				realtimeWrkEngine.SetConcurrency(request.Concurrency)
 				realtimeWrkEngine.SetSamplingTime(request.SamplingTime)
@@ -262,12 +257,7 @@ func main() {
 			}else if request.EngineStatus == false {
 				realtimeWrkEngine.Stop()
 			}
-
 		})
-	})
-
-	server.On("error", func(so socketio.Socket, err error){
-		log.Fatal(err)
 	})
 
 	go func(){
@@ -283,14 +273,10 @@ func main() {
 					for i, testcase := range testset.Testcase{
 						ok := !job.RunWrk(testcase, "con", scriptFile, db)
 						jobProgress[job.ID] = float64(i+1) / float64(len(testset.Testcase)) *100.0
-
-						server.BroadcastTo("real-time", "_" + strconv.Itoa(int(job.ID)),
-							map[string]interface{}{
-								"rx":fmt.Sprintf("%.2f",jobProgress[job.ID]),
-								"ok":ok,
-							})
-
-
+						sockets.BroadCast("ROOM"+ strconv.Itoa(int(job.ID)), map[string]interface{}{
+							"progress":fmt.Sprintf("%.2f",jobProgress[job.ID]),
+							"ok":ok,
+						})
 						db.Save(&job)
 						time.Sleep(10 * time.Second)
 					}
@@ -305,8 +291,6 @@ func main() {
 		}
 	}()
 
-	iris.Handle(iris.MethodGet, "/socket.io/", iris.ToHandler(server))
-	iris.Handle(iris.MethodPost, "/socket.io/", iris.ToHandler(server))
 
 	iris.Listen(":2559")
 }
