@@ -11,7 +11,7 @@ The wg/wrk extension tool provides continuous load testing in range of connectio
 * Realtime Test
 * Soaking Test
 
-### require
+### Require
 * [wg/wrk](https://github.com/wg/wrk)
 * [golang](https://golang.org/)
 
