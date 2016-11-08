@@ -178,6 +178,9 @@
 
         d.on("mousemove", () => {
             let val = d.val();
+            if(val == 0)
+                val = 1;
+            val = val * 5;
             dd.html("Sampling Time : " + val);
         });
 
@@ -190,7 +193,11 @@
         });
 
         d.on('change', () => {
-            protocol.d = parseInt(d.val());
+            let val = parseInt(d.val());
+            if(val == 0)
+                val = 1;
+            val = val * 5;
+            protocol.d = val;
             ws.Emit('realtime', JSON.stringify(protocol));
         });
 
