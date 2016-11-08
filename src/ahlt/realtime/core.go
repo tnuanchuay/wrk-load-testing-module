@@ -10,6 +10,7 @@ import (
 	"os/exec"
 	"strconv"
 	"github.com/kataras/iris"
+	"encoding/json"
 )
 
 type WrkEngine struct{
@@ -76,7 +77,12 @@ func (j *WrkEngine) Start(so iris.WebsocketConnection){
 				j.status = false
 				(so).Emit("err", "err")
 			}else{
-				(so).Emit("data", result.RequestPerSec)
+			data := map[string]interface{}{
+				"rps" : result.RequestPerSec,
+				"errratio" : (float64(result.Non2xx3xx) / float64(result.Requests)),
+			}
+				jsonData, _ := json.Marshal(data)
+				(so).Emit("data", jsonData)
 			}
 
 		}
@@ -106,7 +112,7 @@ func (*WrkEngine) RunForResult(ts model.Testcase, url string) *model.WrkResult{
 	}()
 	command.Start()
 	command.Wait()
-	//fmt.Println(out)
+	fmt.Println(out)
 
 	wrkResult := model.WrkResult{}
 	wrkResult.SetData(url, out)

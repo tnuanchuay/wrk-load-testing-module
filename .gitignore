@@ -8,3 +8,4 @@ bin
 pkg
 lua
 wrk
+*.swp

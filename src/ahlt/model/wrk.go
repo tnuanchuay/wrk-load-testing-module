@@ -4,7 +4,7 @@ import (
 	"regexp"
 	"strings"
 	"strconv"
-	//"fmt"
+	"fmt"
 	"ahlt/unit/si"
 	"ahlt/unit/mtime"
 	"github.com/jinzhu/gorm"
@@ -77,6 +77,7 @@ func (t *WrkResult) SetTotalTransfer(s string){
 	result := regexpTotalTransfer.FindAllStringSubmatch(s, -1)
 	if len(result) != 1{
 		t.IsError = true
+		fmt.Println("TotalTransfer Error")
 	}else{
 		textTotalTransfer := result[0][0]
 		splitedTextTotalTransfer := strings.Fields(textTotalTransfer)
@@ -90,6 +91,7 @@ func (t *WrkResult) SetReqPerSec(s string){
 	result := reqexpReqPerSec.FindAllStringSubmatch(s, -1)
 	if len(result) != 1{
 		t.IsError = true
+		fmt.Println("ReqPerSec Error")
 	}else{
 		textReqPerSec := result[0][0]
 		sqlitedTextReqPerSec := strings.Fields(textReqPerSec)
@@ -103,6 +105,7 @@ func (t *WrkResult) SetLatency(s string){
 	regexpLatency := regexp.MustCompile("Latency[ ]*[0-9A-Za-z.]*[ ]*[0-9A-Za-z.]*[ ]*[0-9A-Za-z.]*")
 	result := regexpLatency.FindAllStringSubmatch(s, -1)
 	if len(result) != 1{
+		fmt.Println("Latency Error")
 		t.IsError = true
 	}else{
 		textLatency := result[0][0]
@@ -114,9 +117,10 @@ func (t *WrkResult) SetLatency(s string){
 }
 
 func (t *WrkResult) SetTransferPerSec(s string){
-	regexpTps := regexp.MustCompile("Transfer/sec:[ ]*[0-9.]*[kMG]B")
+	regexpTps := regexp.MustCompile("Transfer/sec:[ ]*[0-9.]*[KMG]B")
 	result := regexpTps.FindAllStringSubmatch(s, -1)
 	if len(result) != 1{
+		fmt.Println("TransferPerSec Error")
 		t.IsError = true
 	}else{
 		textTps := result[0][0]
@@ -131,6 +135,7 @@ func (t *WrkResult) SetRequestPerSec(s string){
 	result := regexpRps.FindAllStringSubmatch(s, -1)
 	if len(result) != 1{
 		t.IsError = true
+		fmt.Println("RequestPerSec Error")
 	}else{
 		textRps := result[0][0]
 		splitedTextRps := strings.Fields(textRps)
@@ -145,6 +150,7 @@ func (t *WrkResult) SetRequests(s string){
 
 	if len(result) != 1{
 		t.IsError = true
+		fmt.Println("Request Error")
 	}else{
 		textReq := result[0][0]
 		splitedTestReq := strings.Fields(textReq)[0]
@@ -158,6 +164,7 @@ func (t *WrkResult) SetDuration(s string){
 	result := regexpDuration.FindAllStringSubmatch(s, -1)
 
 	if len(result) != 1{
+		fmt.Println("Duration Error")
 		t.IsError = true
 	}else{
 		textTime := result[0][0]
@@ -173,6 +180,7 @@ func (t *WrkResult) SetThread(s string){
 	result := regexpThread.FindAllStringSubmatch(string(s), -1)
 
 	if len(result) != 1{
+		fmt.Println("Thread Error")
 		t.IsError = true
 	}else{
 		textThread := result[0][0]
@@ -189,6 +197,7 @@ func (t *WrkResult) SetConnection(s string){
 
 	if len(result) != 1{
 		t.IsError = true
+		fmt.Println("Connection Error")
 	}else{
 		textConnection := result[0][0]
 		splitedTextConnection := strings.Fields(textConnection)[0]
