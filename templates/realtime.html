@@ -118,7 +118,7 @@
                 <div class="row">
                     <h3 class="pull-right" id="dd">
                     </h3>
-                    <input class="form-control" type="range" id="d">
+                    <input class="form-control" type="range" min="1" max="96" id="d">
                 </div>
             </div>
         </div>
@@ -167,7 +167,7 @@
         d.val(1);
 
         cc.html("Concurrent : " + c.val());
-        dd.html("Sampling Time : " + d.val());
+        dd.html("Sampling Time : " + (d.val()*5) + " s");
 
         c.on("mousemove",() => {
             let count = c.val();
@@ -186,11 +186,19 @@
         });
 
         d.on("mousemove", () => {
-            let val = d.val();
-            if(val == 0)
-                val = 1;
-            val = val * 5;
-            dd.html("Sampling Time : " + val);
+            let count = d.val();
+            let min_count = 0;
+            let sec_count = 0;
+
+            count *= 5;
+            min_count = parseInt(count/60);
+            sec_count = count%60;
+            if(min_count == 0)
+                dd.html("Sampling Time : " + sec_count + " s");
+            else if(min_count != 0 && sec_count == 0)
+                dd.html("Sampling Time : " + min_count + " min ");           
+            else
+                dd.html("Sampling Time : " + min_count + " min " + sec_count + " s");
         });
 
         c.on('change', () => {
