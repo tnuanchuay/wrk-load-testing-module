@@ -113,7 +113,7 @@
                 <div class="row">
                     <h3 class="pull-right" id="cc">
                     </h3>
-                    <input class="form-control" type="range" id="c">
+                    <input class="form-control" type="range" min="1" max="60" id="c">
                 </div>
                 <div class="row">
                     <h3 class="pull-right" id="dd">
@@ -170,10 +170,19 @@
         dd.html("Sampling Time : " + d.val());
 
         c.on("mousemove",() => {
-            let val = c.val();
-            val = Math.round(val / 16.667);
-            val = Math.pow(10, val);
-            cc.html("Concurrent : " + val);
+            let count = c.val();
+            let result = 0;
+            let frac_number = count%10;
+            let power_number = parseInt(count/10);
+
+            if( power_number == 0)
+                result += frac_number;
+            else{
+                result = Math.pow(10, power_number);
+                if( frac_number != 0)
+                    result *= frac_number; 
+            }  
+            cc.html("Concurrent : " + result);
         });
 
         d.on("mousemove", () => {
@@ -182,10 +191,19 @@
         });
 
         c.on('change', () => {
-            let val = c.val();
-            val = Math.round(val / 16.667);
-            val = Math.pow(10, val);
-            protocol.c = val;
+            let count = c.val();
+            let result = 0;
+            let frac_number = count%10;
+            let power_number = parseInt(count/10);
+
+            if( power_number == 0)
+                result += frac_number;
+            else{
+                result = Math.pow(10, power_number);
+                if( frac_number != 0)
+                    result *= frac_number; 
+            }  
+            protocol.c = result;
             ws.Emit('realtime', JSON.stringify(protocol));
         });
 
