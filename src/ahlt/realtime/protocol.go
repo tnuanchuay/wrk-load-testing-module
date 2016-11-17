@@ -11,7 +11,7 @@ type Request struct{
 	Url		string	`json:"url"`
 }
 
-func (r * Request) FromJSON(j string){
+func (r * Request) Parse(j string){
 	json.Unmarshal([]byte(j), r)
 }
 

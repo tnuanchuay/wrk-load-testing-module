@@ -100,15 +100,15 @@
                     <input type="text" class="form-control" id="url" placeholder="URL">
                 </div>
                 <div class="row">
+                    <h2 class="pull-right">
+                        Start <input type="checkbox" id="status" data-toggle="toggle">
+                    </h2>
+                </div>
+                <div class="row">
                     <div id="rps" style="min-width: 310px; height: 200px; margin: 0 auto"></div>
                 </div>
                 <div class="row">
                     <div id="errratio" style="min-width: 310px; height: 200px; margin: 0 auto"></div>
-                </div>
-                <div class="row">
-                    <h2 class="pull-right">
-                        Start <input type="checkbox" id="status" data-toggle="toggle">
-                    </h2>
                 </div>
                 <div class="row">
                     <h3 class="pull-right" id="cc">
@@ -151,7 +151,7 @@
     var protocol = {
         e : false,
         c : 0,
-        d : 0,
+        d : 5,
         url : "",
     };
 
@@ -166,14 +166,14 @@
         c.val(1);
         d.val(1);
 
-        cc.html("Concurrent : " + c.val());
-        dd.html("Sampling Time : " + d.val());
+        cc.html("Connection : " + c.val());
+        dd.html("Sampling Time : " + d.val() * 5);
 
         c.on("mousemove",() => {
             let val = c.val();
             val = Math.round(val / 16.667);
             val = Math.pow(10, val);
-            cc.html("Concurrent : " + val);
+            cc.html("Connection : " + val);
         });
 
         d.on("mousemove", () => {

@@ -244,7 +244,7 @@ func main() {
 		c.On("realtime", func(msg string){
 			var request realtime.Request
 			fmt.Println(msg)
-			request.FromJSON(msg)
+			request.Parse(msg)
 			if (realtimeWrkEngine.GetState() != request.EngineStatus) && (request.EngineStatus == true) {
 				realtimeWrkEngine.SetConcurrency(request.Concurrency)
 				realtimeWrkEngine.SetSamplingTime(request.SamplingTime)
