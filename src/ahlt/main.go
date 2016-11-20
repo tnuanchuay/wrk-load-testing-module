@@ -64,6 +64,13 @@ func main() {
 		}
 	})
 
+	iris.Get("/result/:id/diff", func(ctx *iris.Context){
+		stringId := ctx.Param("id")
+		intId, _ := strconv.Atoi(stringId)
+		jobDiffViewControl := view_controller.DiffSelect{}.GetViewControl(db, uint(intId))
+		ctx.Render("diff-select.html", jobDiffViewControl)
+	})
+
 	iris.Get("/result/:id/del", func(ctx *iris.Context){
 		id := ctx.Param("id")
 		db.Delete(&model.Job{}, "id = ?", id)
