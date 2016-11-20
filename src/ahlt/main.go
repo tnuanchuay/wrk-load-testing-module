@@ -67,8 +67,17 @@ func main() {
 	iris.Get("/result/:id/diff", func(ctx *iris.Context){
 		stringId := ctx.Param("id")
 		intId, _ := strconv.Atoi(stringId)
-		jobDiffViewControl := view_controller.DiffSelect{}.GetViewControl(db, uint(intId))
-		ctx.Render("diff-select.html", jobDiffViewControl)
+		jobDiffSelectViewControl := view_controller.DiffSelect{}.GetViewControl(db, uint(intId))
+		ctx.Render("diff-select.html", jobDiffSelectViewControl)
+	})
+
+	iris.Get("/result/:id/diff/:id2", func(ctx *iris.Context){
+		stringId1 := ctx.Param("id")
+		stringId2 := ctx.Param("id2")
+		intId1, _ := strconv.Atoi(stringId1)
+		intId2, _ := strconv.Atoi(stringId2)
+		jobDiffViewControl := view_controller.DiffPage{}.GetViewControl(db, uint(intId1), uint(intId2))
+		ctx.Render("diff.html", jobDiffViewControl)
 	})
 
 	iris.Get("/result/:id/del", func(ctx *iris.Context){
