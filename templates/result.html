@@ -83,7 +83,11 @@
                         <span class="icon-bar"></span>
                         <span class="icon-bar"></span>
                     </button>
-                    <a class="navbar-brand" href="#">Job - {{ .Job.Name }}</a>
+
+                </div>
+                <div>
+                    <button id="compare" class="btn btn-primary">Compare</button>
+                    <button id="report" class="btn btn-primary">Report</button>
                 </div>
             </div>
         </nav>
@@ -92,6 +96,9 @@
         <div class="content">
             <div class="container-fluid">
                 <div>
+                    <div class="h3">{{ .Job.Name }} - Test Result</div>
+                    <div class="h4">Request to {{ .Job.RequestUrl }}</div>
+                    <div class="h4">Method {{ .Job.RequestMethod }}</div>
                     <table class="table">
                         <thead>
                         <tr>
@@ -143,6 +150,9 @@
     var testset = JSON.parse(`{{ .TestSet }}`)
     var socket = io();
 
+    $("#compare").hide();
+    $("#report").hide();
+
     socket.on('_' + job.ID, function(rx){
         var item = Math.round(rx.rx*testset.Testcase.length/100);
         console.log(item-1);
@@ -167,16 +177,16 @@
 
     $(document).ready(function(){
         for(var i = 0 ; i < testset.Testcase.length ; i++){
-                var testcaseResult = findTestDataByTestcaseId(testset.Testcase[i].ID);
-                if(testcaseResult != undefined){
-                    var labelString = "";
-                    if(testcaseResult.IsError){
-                        labelString = `<span class="label label-danger">Error</span>`;
-                    }else{
-                        labelString = `<span class="label label-success">Pass</span>`;
-                    }
+            var testcaseResult = findTestDataByTestcaseId(testset.Testcase[i].ID);
+            if(testcaseResult != undefined){
+                var labelString = "";
+                if(testcaseResult.IsError){
+                    labelString = `<span class="label label-danger">Error</span>`;
+                }else{
+                    labelString = `<span class="label label-success">Pass</span>`;
+                }
 
-                    $("#tbody-case").append(`
+                $("#tbody-case").append(`
                         <tr>
                             <td>${i+1}</td>
                             <td>${testset.Testcase[i].Thread}</td>
@@ -185,9 +195,9 @@
                             <td>${labelString}</td>
                         </tr>
                     `);
-                }else{
-                    if(job.ExitInterrupt){
-                        $("#tbody-case").append(`
+            }else{
+                if(job.ExitInterrupt){
+                    $("#tbody-case").append(`
                             <tr>
                                 <td>${i+1}</td>
                                 <td>${testset.Testcase[i].Thread}</td>
@@ -196,8 +206,8 @@
                                 <td><span class="label label-danger">Exit interrupt</span></td>
                             </tr>
                         `);
-                    }else{
-                        $("#tbody-case").append(`
+                }else{
+                    $("#tbody-case").append(`
                             <tr>
                                 <td>${i+1}</td>
                                 <td>${testset.Testcase[i].Thread}</td>
@@ -206,11 +216,14 @@
                                 <td><span class="label label-default">in progress</span></td>
                             </tr>
                         `);
-                    }
                 }
+            }
         }
 
         if(wrk.length == testset.Testcase.length){
+            $("#compare").show();
+            $("#report").show();
+
             $("#graph").append(`<h2>Request / Second</h2>`);
             $("#graph").append(`<div id="rps"></div>`);
             $("#graph").append(`<h2>Transfer / Second</h2>`);

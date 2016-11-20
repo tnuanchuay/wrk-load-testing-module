@@ -167,7 +167,7 @@
         }
 
         ws.On("h", function (msg) {
-           console.log(msg);
+            console.log(msg);
         });
 
         for(var i = 0 ; i < data.length ; i++){
@@ -192,7 +192,8 @@
                 var value = JSON.parse(msg);
                 var str = "";
                 if(value.progress == "100.00"){
-                    str = `<span class="label label-success">finished</span>`;
+                    if(d.TestError == 0)
+                        str = `<span class="label label-success">finished</span>`;
                 }else{
                     str = `<span class="label label-primary">${value.progress} %</span>`;
                 }
