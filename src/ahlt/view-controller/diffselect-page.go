@@ -7,6 +7,7 @@ import (
 
 type(
 	DiffSelect struct{
+		OriginId		uint
 		SameTestsetJobs		[]model.Job
 	}
 )
@@ -14,7 +15,8 @@ type(
 func (DiffSelect) GetViewControl(db *gorm.DB, id uint) *DiffSelect{
 	var diffSelect DiffSelect
 	var firstJob model.Job
+	diffSelect.OriginId = id
 	db.Where("id = ?", id).First(&firstJob)
-	db.Where("testset = ?", firstJob.Testset).Find(&diffSelect.SameTestsetJobs)
+	db.Where("testset = ?", firstJob.Testset).Order("created_at desc").Find(&diffSelect.SameTestsetJobs)
 	return &diffSelect
 }

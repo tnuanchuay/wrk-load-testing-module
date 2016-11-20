@@ -91,7 +91,18 @@
 
         <div class="content">
             <div class="container-fluid">
-
+                <table class="table">
+                    <thead>
+                    <tr>
+                        <td>#</td>
+                        <td>Name</td>
+                        <td>Date</td>
+                        <td>Compare with</td>
+                    </tr>
+                    </thead>
+                    <tbody id="jobs">
+                    </tbody>
+                </table>
             </div>
         </div>
 
@@ -123,5 +134,24 @@
 
 <!-- Light Bootstrap Table Core javascript and methods for Demo purpose -->
 <script src="/assets/js/light-bootstrap-dashboard.js"></script>
-
+<script>
+    var jobs = JSON.parse(`{{.SameTestsetJobs}}`);
+    var originId = "{{.OriginId}}";
+    $(document).ready(function(){
+        for(let i = 0 ; i < jobs.length ; i++){
+            $("#jobs").append(`
+                <tr>
+                    <td>${i+1}</td>
+                    <td>${jobs[i].Name}</td>
+                    <td>${new Date(jobs[i].CreatedAt)}</td>
+                    <td>
+                        <a href="/result/${originId}/diff/${jobs[i].ID}">
+                            <button class="btn btn-primary">This</button>
+                        </a>
+                    </td>
+                </tr>
+            `)
+        }
+    })
+</script>
 </html>
