@@ -24,7 +24,9 @@ type(
 		SocketErrors_Read	[]int
 		SocketErrors_Write	[]int
 		SocketErrors_Timeout	[]int
+		TotalSocketError	[]int
 		Non2xx3xx		[]int
+		SuccessRequest		[]int
 		TestcaseID		uint
 	}
 )
@@ -53,5 +55,7 @@ func (b *BenchmarkResult) FromWrkResultToJobData(job model.Job){
 		b.SocketErrors_Write = append(b.SocketErrors_Write, wrkResult.SocketErrors_Write)
 		b.SocketErrors_Timeout = append(b.SocketErrors_Timeout, wrkResult.SocketErrors_Timeout)
 		b.Non2xx3xx= append(b.Non2xx3xx, wrkResult.Non2xx3xx)
+		b.TotalSocketError = append(b.TotalSocketError, wrkResult.SocketErrors_Timeout + wrkResult.SocketErrors_Write + wrkResult.SocketErrors_Read + wrkResult.SocketErrors_Connection)
+		b.SuccessRequest = append(b.SuccessRequest, wrkResult.Requests-wrkResult.Non2xx3xx)
 	}
 }

@@ -104,6 +104,13 @@
                 </div>
                 <div class="row">
                     <div id="rps" style="min-width: 310px; height: 200px; margin: 0 auto"></div>
+                    <div id="tps" style="min-width: 310px; height: 200px; margin: 0 auto"></div>
+                    <div id="reqs" style="min-width: 310px; height: 200px; margin: 0 auto"></div>
+                    <div id="ttf" style="min-width: 310px; height: 200px; margin: 0 auto"></div>
+                    <div id="avglat" style="min-width: 310px; height: 200px; margin: 0 auto"></div>
+                    <div id="avgonet" style="min-width: 310px; height: 200px; margin: 0 auto"></div>
+                    <div id="socerr" style="min-width: 310px; height: 200px; margin: 0 auto"></div>
+                    <div id="success" style="min-width: 310px; height: 200px; margin: 0 auto"></div>
                 </div>
             </div>
         </div>
@@ -151,7 +158,7 @@
                 marginRight: 10,
             },
             title: {
-                text: 'Request / Sec'
+                text: 'Requests / Sec'
             },
             xAxis: {
                 categories:xAxis,
@@ -187,6 +194,374 @@
                 {
                     name: job2.Name,
                     data: bm2.RequestPerSec
+                }
+            ]
+        });
+        Highcharts.chart('tps', {
+            chart: {
+                type: 'spline',
+                animation: Highcharts.svg, // don't animate in old IE
+                marginRight: 10,
+            },
+            title: {
+                text: 'Transfer / Sec'
+            },
+            xAxis: {
+                categories:xAxis,
+            },
+            yAxis: {
+                title: {
+                    text: 'Value'
+                },
+                plotLines: [{
+                    value: 0,
+                    width: 1,
+                    color: '#808080'
+                }]
+            },
+            tooltip: {
+                formatter: function () {
+                    return '<b>' + this.series.name + '</b><br/>' +
+                        this.x + '<br/>' +
+                        Highcharts.numberFormat(this.y, 2);
+                }
+            },
+            legend: {
+                enabled: false
+            },
+            exporting: {
+                enabled: false
+            },
+            series: [
+                {
+                    name: job1.Name,
+                    data: bm1.TransferPerSec
+                },
+                {
+                    name: job2.Name,
+                    data: bm2.TransferPerSec
+                }
+            ]
+        });
+        Highcharts.chart('reqs', {
+            chart: {
+                type: 'spline',
+                animation: Highcharts.svg, // don't animate in old IE
+                marginRight: 10,
+            },
+            title: {
+                text: 'Number of Requests'
+            },
+            xAxis: {
+                categories:xAxis,
+            },
+            yAxis: {
+                title: {
+                    text: 'Value'
+                },
+                plotLines: [{
+                    value: 0,
+                    width: 1,
+                    color: '#808080'
+                }]
+            },
+            tooltip: {
+                formatter: function () {
+                    return '<b>' + this.series.name + '</b><br/>' +
+                        this.x + '<br/>' +
+                        Highcharts.numberFormat(this.y, 2);
+                }
+            },
+            legend: {
+                enabled: false
+            },
+            exporting: {
+                enabled: false
+            },
+            series: [
+                {
+                    name: job1.Name,
+                    data: bm1.Requests
+                },
+                {
+                    name: job2.Name,
+                    data: bm2.Requests
+                }
+            ]
+        });
+        Highcharts.chart('ttf', {
+            chart: {
+                type: 'spline',
+                animation: Highcharts.svg, // don't animate in old IE
+                marginRight: 10,
+            },
+            title: {
+                text: 'Total Transfer'
+            },
+            xAxis: {
+                categories:xAxis,
+            },
+            yAxis: {
+                title: {
+                    text: 'Value'
+                },
+                plotLines: [{
+                    value: 0,
+                    width: 1,
+                    color: '#808080'
+                }]
+            },
+            tooltip: {
+                formatter: function () {
+                    return '<b>' + this.series.name + '</b><br/>' +
+                        this.x + '<br/>' +
+                        Highcharts.numberFormat(this.y, 2);
+                }
+            },
+            legend: {
+                enabled: false
+            },
+            exporting: {
+                enabled: false
+            },
+            series: [
+                {
+                    name: job1.Name,
+                    data: bm1.TotalTransfer
+                },
+                {
+                    name: job2.Name,
+                    data: bm2.TotalTransfer
+                }
+            ]
+        });
+        Highcharts.chart('avglat', {
+            chart: {
+                type: 'spline',
+                animation: Highcharts.svg, // don't animate in old IE
+                marginRight: 10,
+            },
+            title: {
+                text: 'Average Latency'
+            },
+            xAxis: {
+                categories:xAxis,
+            },
+            yAxis: {
+                title: {
+                    text: 'Value'
+                },
+                plotLines: [{
+                    value: 0,
+                    width: 1,
+                    color: '#808080'
+                }]
+            },
+            tooltip: {
+                formatter: function () {
+                    return '<b>' + this.series.name + '</b><br/>' +
+                        this.x + '<br/>' +
+                        Highcharts.numberFormat(this.y, 2);
+                }
+            },
+            legend: {
+                enabled: false
+            },
+            exporting: {
+                enabled: false
+            },
+            series: [
+                {
+                    name: job1.Name,
+                    data: bm1.Latency_Avg
+                },
+                {
+                    name: job2.Name,
+                    data: bm2.Latency_Avg
+                }
+            ]
+        });
+        Highcharts.chart('avgonet', {
+            chart: {
+                type: 'spline',
+                animation: Highcharts.svg, // don't animate in old IE
+                marginRight: 10,
+            },
+            title: {
+                text: 'Average One Thread Requests / Second'
+            },
+            xAxis: {
+                categories:xAxis,
+            },
+            yAxis: {
+                title: {
+                    text: 'Value'
+                },
+                plotLines: [{
+                    value: 0,
+                    width: 1,
+                    color: '#808080'
+                }]
+            },
+            tooltip: {
+                formatter: function () {
+                    return '<b>' + this.series.name + '</b><br/>' +
+                        this.x + '<br/>' +
+                        Highcharts.numberFormat(this.y, 2);
+                }
+            },
+            legend: {
+                enabled: false
+            },
+            exporting: {
+                enabled: false
+            },
+            series: [
+                {
+                    name: job1.Name,
+                    data: bm1.ReqPerSec_Avg
+                },
+                {
+                    name: job2.Name,
+                    data: bm2.ReqPerSec_Avg
+                }
+            ]
+        });
+        Highcharts.chart('avgonet', {
+            chart: {
+                type: 'spline',
+                animation: Highcharts.svg, // don't animate in old IE
+                marginRight: 10,
+            },
+            title: {
+                text: 'Average One Thread Requests / Second'
+            },
+            xAxis: {
+                categories:xAxis,
+            },
+            yAxis: {
+                title: {
+                    text: 'Value'
+                },
+                plotLines: [{
+                    value: 0,
+                    width: 1,
+                    color: '#808080'
+                }]
+            },
+            tooltip: {
+                formatter: function () {
+                    return '<b>' + this.series.name + '</b><br/>' +
+                        this.x + '<br/>' +
+                        Highcharts.numberFormat(this.y, 2);
+                }
+            },
+            legend: {
+                enabled: false
+            },
+            exporting: {
+                enabled: false
+            },
+            series: [
+                {
+                    name: job1.Name,
+                    data: bm1.ReqPerSec_Avg
+                },
+                {
+                    name: job2.Name,
+                    data: bm2.ReqPerSec_Avg
+                }
+            ]
+        });
+        Highcharts.chart('socerr', {
+            chart: {
+                type: 'spline',
+                animation: Highcharts.svg, // don't animate in old IE
+                marginRight: 10,
+            },
+            title: {
+                text: 'Socket Error'
+            },
+            xAxis: {
+                categories:xAxis,
+            },
+            yAxis: {
+                title: {
+                    text: 'Value'
+                },
+                plotLines: [{
+                    value: 0,
+                    width: 1,
+                    color: '#808080'
+                }]
+            },
+            tooltip: {
+                formatter: function () {
+                    return '<b>' + this.series.name + '</b><br/>' +
+                        this.x + '<br/>' +
+                        Highcharts.numberFormat(this.y, 2);
+                }
+            },
+            legend: {
+                enabled: false
+            },
+            exporting: {
+                enabled: false
+            },
+            series: [
+                {
+                    name: job1.Name,
+                    data: bm1.TotalSocketError
+                },
+                {
+                    name: job2.Name,
+                    data: bm2.TotalSocketError
+                }
+            ]
+        });
+        Highcharts.chart('success', {
+            chart: {
+                type: 'spline',
+                animation: Highcharts.svg, // don't animate in old IE
+                marginRight: 10,
+            },
+            title: {
+                text: 'Socket Error'
+            },
+            xAxis: {
+                categories:xAxis,
+            },
+            yAxis: {
+                title: {
+                    text: 'Value'
+                },
+                plotLines: [{
+                    value: 0,
+                    width: 1,
+                    color: '#808080'
+                }]
+            },
+            tooltip: {
+                formatter: function () {
+                    return '<b>' + this.series.name + '</b><br/>' +
+                        this.x + '<br/>' +
+                        Highcharts.numberFormat(this.y, 2);
+                }
+            },
+            legend: {
+                enabled: false
+            },
+            exporting: {
+                enabled: false
+            },
+            series: [
+                {
+                    name: job1.Name,
+                    data: bm1.SuccessRequest
+                },
+                {
+                    name: job2.Name,
+                    data: bm2.SuccessRequest
                 }
             ]
         });

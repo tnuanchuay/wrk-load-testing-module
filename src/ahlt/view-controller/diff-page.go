@@ -4,7 +4,6 @@ import (
 	"ahlt/model"
 	"github.com/jinzhu/gorm"
 	"ahlt/compare"
-	"fmt"
 )
 
 type(
