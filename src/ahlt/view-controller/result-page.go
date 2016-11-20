@@ -19,7 +19,7 @@ type(
 
 func (Result)GetViewControl(db *gorm.DB) *Result{
 	var result Result
-	db.Find(&result.Job)
+	db.Order("created_at desc").Find(&result.Job)
 	db.Find(&result.Testset)
 	return &result
 }
