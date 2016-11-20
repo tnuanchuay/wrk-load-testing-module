@@ -101,15 +101,15 @@
                     <input type="text" class="form-control" id="url" placeholder="URL">
                 </div>
                 <div class="row">
+                    <h2 class="pull-right">
+                        Start <input type="checkbox" id="status" data-toggle="toggle">
+                    </h2>
+                </div>
+                <div class="row">
                     <div id="rps" style="min-width: 310px; height: 200px; margin: 0 auto"></div>
                 </div>
                 <div class="row">
                     <div id="errratio" style="min-width: 310px; height: 200px; margin: 0 auto"></div>
-                </div>
-                <div class="row">
-                    <h2 class="pull-right">
-                        Start <input type="checkbox" id="status" data-toggle="toggle">
-                    </h2>
                 </div>
                 <div class="row">
                     <h3 class="pull-right" id="cc">
@@ -152,7 +152,7 @@
     var protocol = {
         e : false,
         c : 0,
-        d : 0,
+        d : 5,
         url : "",
     };
 

@@ -64,6 +64,13 @@ func main() {
 		}
 	})
 
+	iris.Get("/result/:id/diff", func(ctx *iris.Context){
+		stringId := ctx.Param("id")
+		intId, _ := strconv.Atoi(stringId)
+		jobDiffViewControl := view_controller.DiffSelect{}.GetViewControl(db, uint(intId))
+		ctx.Render("diff-select.html", jobDiffViewControl)
+	})
+
 	iris.Get("/result/:id/del", func(ctx *iris.Context){
 		id := ctx.Param("id")
 		db.Delete(&model.Job{}, "id = ?", id)
@@ -244,7 +251,7 @@ func main() {
 		c.On("realtime", func(msg string){
 			var request realtime.Request
 			fmt.Println(msg)
-			request.FromJSON(msg)
+			request.Parse(msg)
 			if (realtimeWrkEngine.GetState() != request.EngineStatus) && (request.EngineStatus == true) {
 				realtimeWrkEngine.SetConcurrency(request.Concurrency)
 				realtimeWrkEngine.SetSamplingTime(request.SamplingTime)
