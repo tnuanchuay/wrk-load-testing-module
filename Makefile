@@ -3,7 +3,7 @@ BIN=./ahlt
 SRC=src/ahlt/main.go
 GOPATH=$(shell pwd)
 
-all: clean golib build
+all: golib build
 
 clean: 
 	$(RM) $(BIN)
