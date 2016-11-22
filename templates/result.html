@@ -141,14 +141,13 @@
 
 <!--  Checkbox, Radio & Switch Plugins -->
 <script src="/assets/js/bootstrap-checkbox-radio-switch.js"></script>
-
-<!--  Notifications Plugin    -->
-<script src="/assets/js/bootstrap-notify.js"></script>
-<script src="/assets/js/chartist.min.js"></script>
 <script src="/assets/js/socket.io-1.4.5.js"></script>
 
 <!-- Light Bootstrap Table Core javascript and methods for Demo purpose -->
 <script src="/assets/js/light-bootstrap-dashboard.js"></script>
+
+<script src="https://code.highcharts.com/highcharts.js"></script>
+<script src="https://code.highcharts.com/modules/exporting.js"></script>
 
 <script>
     var wrk = JSON.parse(`{{ .Job.WrkResult }}`);
@@ -230,23 +229,14 @@
             $("#compare").show();
             $("#report").show();
 
-            $("#graph").append(`<h2>Request / Second</h2>`);
             $("#graph").append(`<div id="rps"></div>`);
-            $("#graph").append(`<h2>Transfer / Second</h2>`);
             $("#graph").append(`<div id="tps"></div>`);
-            $("#graph").append(`<h2>Requests</h2>`);
             $("#graph").append(`<div id="requests"></div>`);
-            $("#graph").append(`<h2>Total Transfers</h2>`);
             $("#graph").append(`<div id="totalTransfer"></div>`);
-            $("#graph").append(`<h2>Latency</h2>`);
             $("#graph").append(`<div id="latency"></div>`);
-            $("#graph").append(`<h2>One Thread Request / Second</h2>`);
             $("#graph").append(`<div id="rpsOneThread"></div>`);
-            $("#graph").append(`<h2>Socket Error</h2>`);
             $("#graph").append(`<div id="socketerr"></div>`);
-            $("#graph").append(`<h2>Non-2xx3xx Response</h2>`);
             $("#graph").append(`<div id="non2xx3xx"></div>`);
-            $("#graph").append(`<h2>Success</h2>`);
             $("#graph").append(`<div id="success"></div>`);
 
             var options = {
@@ -265,7 +255,7 @@
                 }
             };
 
-            var label = job.Label.split(",").slice(0, wrk.length);
+            var xAxis = job.Label.split(",").slice(0, wrk.length);
             var rps = [];
             var tps = [];
             var requests = [];
@@ -301,51 +291,406 @@
 
             console.log(socketerr);
 
-            new Chartist.Line('#rps', {
-                labels: label,
-                series: [rps]
-            }, options);
+            Highcharts.setOptions({
+                global: {
+                    useUTC: false
+                }
+            });
 
-            new Chartist.Line('#tps', {
-                labels: label,
-                series: [tps]
-            }, options);
-
-            new Chartist.Line('#requests', {
-                labels: label,
-                series: [requests]
-            }, options);
-
-            new Chartist.Line('#totalTransfer', {
-                labels: label,
-                series: [totalTransfer]
-            }, options);
-
-            new Chartist.Line('#latency', {
-                labels: label,
-                series: [latency_avg, latency_stdev, latency_max]
-            }, options);
-
-            new Chartist.Line('#rpsOneThread', {
-                labels: label,
-                series: [rpsot_avg, rpsot_stdev, rpsot_max]
-            }, options);
-
-            new Chartist.Line('#socketerr', {
-                labels: label,
-                series: [socketerr]
-            }, options);
-
-            new Chartist.Line('#non2xx3xx', {
-                labels: label,
-                series: [non2xx3xx]
-            }, options);
-
-            new Chartist.Line('#success', {
-                labels: label,
-                series: [success]
-            }, options);
-
+            Highcharts.chart('rps', {
+                chart: {
+                    type: 'spline',
+                    animation: Highcharts.svg, // don't animate in old IE
+                    marginRight: 10,
+                },
+                title: {
+                    text: 'Requests / Sec'
+                },
+                xAxis: {
+                    categories:xAxis,
+                },
+                yAxis: {
+                    title: {
+                        text: 'Value'
+                    },
+                    plotLines: [{
+                        value: 0,
+                        width: 1,
+                        color: '#808080'
+                    }]
+                },
+                tooltip: {
+                    formatter: function () {
+                        return '<b>' + this.series.name + '</b><br/>' +
+                            this.x + '<br/>' +
+                            Highcharts.numberFormat(this.y, 2);
+                    }
+                },
+                legend: {
+                    enabled: false
+                },
+                exporting: {
+                    enabled: false
+                },
+                series: [
+                    {
+                        name: "Requests / Second",
+                        data: rps
+                    }
+                ]
+            });
+            Highcharts.chart('tps', {
+                chart: {
+                    type: 'spline',
+                    animation: Highcharts.svg, // don't animate in old IE
+                    marginRight: 10,
+                },
+                title: {
+                    text: 'Transfer / Second'
+                },
+                xAxis: {
+                    categories:xAxis,
+                },
+                yAxis: {
+                    title: {
+                        text: 'Value'
+                    },
+                    plotLines: [{
+                        value: 0,
+                        width: 1,
+                        color: '#808080'
+                    }]
+                },
+                tooltip: {
+                    formatter: function () {
+                        return '<b>' + this.series.name + '</b><br/>' +
+                            this.x + '<br/>' +
+                            Highcharts.numberFormat(this.y, 2);
+                    }
+                },
+                legend: {
+                    enabled: false
+                },
+                exporting: {
+                    enabled: false
+                },
+                series: [
+                    {
+                        name: "Transfer / Second",
+                        data: tps
+                    }
+                ]
+            });
+            Highcharts.chart('requests', {
+                chart: {
+                    type: 'spline',
+                    animation: Highcharts.svg, // don't animate in old IE
+                    marginRight: 10,
+                },
+                title: {
+                    text: 'Number of Requests'
+                },
+                xAxis: {
+                    categories:xAxis,
+                },
+                yAxis: {
+                    title: {
+                        text: 'Value'
+                    },
+                    plotLines: [{
+                        value: 0,
+                        width: 1,
+                        color: '#808080'
+                    }]
+                },
+                tooltip: {
+                    formatter: function () {
+                        return '<b>' + this.series.name + '</b><br/>' +
+                            this.x + '<br/>' +
+                            Highcharts.numberFormat(this.y, 2);
+                    }
+                },
+                legend: {
+                    enabled: false
+                },
+                exporting: {
+                    enabled: false
+                },
+                series: [
+                    {
+                        name: "Number of Requests",
+                        data: requests
+                    }
+                ]
+            });
+            Highcharts.chart('totalTransfer', {
+                chart: {
+                    type: 'spline',
+                    animation: Highcharts.svg, // don't animate in old IE
+                    marginRight: 10,
+                },
+                title: {
+                    text: 'Total Transfer'
+                },
+                xAxis: {
+                    categories:xAxis,
+                },
+                yAxis: {
+                    title: {
+                        text: 'Value'
+                    },
+                    plotLines: [{
+                        value: 0,
+                        width: 1,
+                        color: '#808080'
+                    }]
+                },
+                tooltip: {
+                    formatter: function () {
+                        return '<b>' + this.series.name + '</b><br/>' +
+                            this.x + '<br/>' +
+                            Highcharts.numberFormat(this.y, 2);
+                    }
+                },
+                legend: {
+                    enabled: false
+                },
+                exporting: {
+                    enabled: false
+                },
+                series: [
+                    {
+                        name: "Total Transfer",
+                        data: totalTransfer
+                    }
+                ]
+            });
+            Highcharts.chart('latency', {
+                chart: {
+                    type: 'spline',
+                    animation: Highcharts.svg, // don't animate in old IE
+                    marginRight: 10,
+                },
+                title: {
+                    text: 'Latency'
+                },
+                xAxis: {
+                    categories:xAxis,
+                },
+                yAxis: {
+                    title: {
+                        text: 'Value'
+                    },
+                    plotLines: [{
+                        value: 0,
+                        width: 1,
+                        color: '#808080'
+                    }]
+                },
+                tooltip: {
+                    formatter: function () {
+                        return '<b>' + this.series.name + '</b><br/>' +
+                            this.x + '<br/>' +
+                            Highcharts.numberFormat(this.y, 2);
+                    }
+                },
+                legend: {
+                    enabled: false
+                },
+                exporting: {
+                    enabled: false
+                },
+                series: [
+                    {
+                        name: "Average",
+                        data: latency_avg
+                    },
+                    {
+                        name: "Max",
+                        data: latency_max
+                    },
+                    {
+                        name: "Standard Deviation",
+                        data: latency_stdev
+                    }
+                ]
+            });
+            Highcharts.chart('rpsOneThread', {
+                chart: {
+                    type: 'spline',
+                    animation: Highcharts.svg, // don't animate in old IE
+                    marginRight: 10,
+                },
+                title: {
+                    text: 'One Thread Requests / Second'
+                },
+                xAxis: {
+                    categories:xAxis,
+                },
+                yAxis: {
+                    title: {
+                        text: 'Value'
+                    },
+                    plotLines: [{
+                        value: 0,
+                        width: 1,
+                        color: '#808080'
+                    }]
+                },
+                tooltip: {
+                    formatter: function () {
+                        return '<b>' + this.series.name + '</b><br/>' +
+                            this.x + '<br/>' +
+                            Highcharts.numberFormat(this.y, 2);
+                    }
+                },
+                legend: {
+                    enabled: false
+                },
+                exporting: {
+                    enabled: false
+                },
+                series: [
+                    {
+                        name: "Average",
+                        data: rpsot_avg
+                    },
+                    {
+                        name: "Max",
+                        data: rpsot_max
+                    },
+                    {
+                        name: "Standard Deviation",
+                        data: rpsot_stdev
+                    }
+                ]
+            });
+            Highcharts.chart('socketerr', {
+                chart: {
+                    type: 'spline',
+                    animation: Highcharts.svg, // don't animate in old IE
+                    marginRight: 10,
+                },
+                title: {
+                    text: 'Socket Error'
+                },
+                xAxis: {
+                    categories:xAxis,
+                },
+                yAxis: {
+                    title: {
+                        text: 'Value'
+                    },
+                    plotLines: [{
+                        value: 0,
+                        width: 1,
+                        color: '#808080'
+                    }]
+                },
+                tooltip: {
+                    formatter: function () {
+                        return '<b>' + this.series.name + '</b><br/>' +
+                            this.x + '<br/>' +
+                            Highcharts.numberFormat(this.y, 2);
+                    }
+                },
+                legend: {
+                    enabled: false
+                },
+                exporting: {
+                    enabled: false
+                },
+                series: [
+                    {
+                        name: "Socket Error",
+                        data: socketerr
+                    },
+                ]
+            });
+            Highcharts.chart('non2xx3xx', {
+                chart: {
+                    type: 'spline',
+                    animation: Highcharts.svg, // don't animate in old IE
+                    marginRight: 10,
+                },
+                title: {
+                    text: 'Non 2xx - 3xx Responses'
+                },
+                xAxis: {
+                    categories:xAxis,
+                },
+                yAxis: {
+                    title: {
+                        text: 'Value'
+                    },
+                    plotLines: [{
+                        value: 0,
+                        width: 1,
+                        color: '#808080'
+                    }]
+                },
+                tooltip: {
+                    formatter: function () {
+                        return '<b>' + this.series.name + '</b><br/>' +
+                            this.x + '<br/>' +
+                            Highcharts.numberFormat(this.y, 2);
+                    }
+                },
+                legend: {
+                    enabled: false
+                },
+                exporting: {
+                    enabled: false
+                },
+                series: [
+                    {
+                        name: "Non 2xx - 3xx Responses",
+                        data: non2xx3xx
+                    },
+                ]
+            });
+            Highcharts.chart('success', {
+                chart: {
+                    type: 'spline',
+                    animation: Highcharts.svg, // don't animate in old IE
+                    marginRight: 10,
+                },
+                title: {
+                    text: 'Success Responses'
+                },
+                xAxis: {
+                    categories:xAxis,
+                },
+                yAxis: {
+                    title: {
+                        text: 'Value'
+                    },
+                    plotLines: [{
+                        value: 0,
+                        width: 1,
+                        color: '#808080'
+                    }]
+                },
+                tooltip: {
+                    formatter: function () {
+                        return '<b>' + this.series.name + '</b><br/>' +
+                            this.x + '<br/>' +
+                            Highcharts.numberFormat(this.y, 2);
+                    }
+                },
+                legend: {
+                    enabled: false
+                },
+                exporting: {
+                    enabled: false
+                },
+                series: [
+                    {
+                        name: "Success Responses",
+                        data: success
+                    },
+                ]
+            });
         }
     });
 </script>
