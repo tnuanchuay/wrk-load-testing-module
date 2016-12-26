@@ -1,6 +1,6 @@
 package compare
 
-import "ahlt/model"
+import "github.com/tspn/wrk-load-testing-module/model"
 
 type(
 	BenchmarkResult struct {

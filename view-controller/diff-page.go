@@ -1,9 +1,9 @@
 package view_controller
 
 import (
-	"ahlt/model"
+	"github.com/tspn/wrk-load-testing-module/model"
 	"github.com/jinzhu/gorm"
-	"ahlt/compare"
+	"github.com/tspn/wrk-load-testing-module/compare"
 )
 
 type(

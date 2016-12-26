@@ -1,4 +1,4 @@
-package static
+package statics
 const(
 	LUA_METHOD 		= 	"wrk.method = \"%s\"\n"
 	LUA_LOAD 		=	"wrk.body = \"%s\"\n"

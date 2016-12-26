@@ -5,8 +5,8 @@ import (
 	"strings"
 	"strconv"
 	"fmt"
-	"ahlt/unit/si"
-	"ahlt/unit/mtime"
+	"github.com/tspn/wrk-load-testing-module/unit/si"
+	"github.com/tspn/wrk-load-testing-module/unit/mtime"
 	"github.com/jinzhu/gorm"
 )
 

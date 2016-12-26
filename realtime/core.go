@@ -1,7 +1,7 @@
 package realtime
 
 import (
-	"ahlt/model"
+	"github.com/tspn/wrk-load-testing-module/model"
 	"sync"
 	"runtime"
 	"fmt"

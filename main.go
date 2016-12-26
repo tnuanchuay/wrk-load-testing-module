@@ -4,17 +4,17 @@ import (
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/sqlite"
 	"github.com/kataras/iris"
-	"ahlt/model"
-	"ahlt/view-controller"
+	"github.com/tspn/wrk-load-testing-module/model"
+	"github.com/tspn/wrk-load-testing-module/view-controller"
 	"fmt"
 	"sync"
 	"time"
 	"strconv"
 	"runtime"
-	"ahlt/unit/si"
+	"github.com/tspn/wrk-load-testing-module/unit/si"
 	"os"
-	"ahlt/realtime"
-	"ahlt/ws"
+	"github.com/tspn/wrk-load-testing-module/realtime"
+	"github.com/tspn/wrk-load-testing-module/ws"
 )
 
 func main() {

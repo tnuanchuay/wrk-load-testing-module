@@ -7,8 +7,8 @@ import (
 	"bufio"
 	"strings"
 	"io/ioutil"
-	"ahlt/static"
 	"crypto/md5"
+	"github.com/tspn/wrk-load-testing-module/statics"
 )
 
 type Job struct{
@@ -89,10 +89,10 @@ func (j *Job) RunWrk(ts Testcase, label, scriptFile string, db *gorm.DB)bool{
 
 func (j *Job) GenerateScript(filename string)string{
 	script := ""
-	script += fmt.Sprintf(static.LUA_METHOD, j.RequestMethod)
+	script += fmt.Sprintf(statics.LUA_METHOD, j.RequestMethod)
 	if len(j.Load) > 0{
-		script += fmt.Sprintf(static.LUA_LOAD, j.Load)
-		script += fmt.Sprintf(static.LUA_CONTENTTYPE, "application/x-www-form-urlencoded")
+		script += fmt.Sprintf(statics.LUA_LOAD, j.Load)
+		script += fmt.Sprintf(statics.LUA_CONTENTTYPE, "application/x-www-form-urlencoded")
 	}
 	md5filename := md5.Sum([]byte(filename))
 	fmt.Println(script)
