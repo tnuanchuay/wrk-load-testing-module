@@ -7,6 +7,5 @@ src/gopkg.in
 bin
 pkg
 lua
-wrk
 *.swp
 wrk-load-testing-module
