@@ -234,7 +234,7 @@ func main() {
 		ctx.Render("ec.html", nil)
 	})
 
-	iris.Get("/ec/test", func(ctx *iris.Context){
+	iris.Post("/ec/test", func(ctx *iris.Context){
 		url := string(ctx.FormValue("url"))
 		stepString := string(ctx.FormValue("step"))
 		step, _ := strconv.Atoi(stepString)
