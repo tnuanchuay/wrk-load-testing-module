@@ -28,9 +28,7 @@ cd wrk
 make
 sudo install 0755 wrk /bin
 ```
-* Install Ahlt
+* Installation
 ```
-git clone https://github.com/tspn/wrk-load-testing-module.git
-cd ahlt
-make
+go get github.com/tspn/wrk-load-testing-module
 ```
