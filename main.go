@@ -15,6 +15,7 @@ import (
 	"os"
 	"github.com/tspn/wrk-load-testing-module/realtime"
 	"github.com/tspn/wrk-load-testing-module/ws"
+	"github.com/tspn/wrk-load-testing-module/wrk"
 )
 
 func main() {
@@ -228,6 +229,30 @@ func main() {
 	iris.Get("/realtime", func(ctx *iris.Context){
 		ctx.Render("realtime.html", nil)
 	})
+
+	iris.Get("/ec", func(ctx *iris.Context){
+		ctx.Render("ec.html", nil)
+	})
+
+	iris.Get("/ec/test", func(ctx *iris.Context){
+		url := string(ctx.FormValue("url"))
+		stepString := string(ctx.FormValue("step"))
+		step, _ := strconv.Atoi(stepString)
+
+		wg := sync.WaitGroup{}
+		go func() {
+			for i := runtime.NumCPU(); i <= 100000; i += step {
+				wg.Add(1)
+				go func() {
+					result := wrk.Run(url, strconv.Itoa(runtime.NumCPU()), strconv.Itoa(i), "10s")
+					fmt.Printf("%d", result.Non2xx3xx)
+					wg.Done()
+				}()
+				wg.Wait()
+			}
+		}()
+	})
+
 	iris.Config.Websocket.Endpoint = "/end_point"
 	iris.Config.Websocket.WriteBufferSize = 10000
 
