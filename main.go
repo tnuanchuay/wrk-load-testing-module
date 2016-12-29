@@ -236,20 +236,32 @@ func main() {
 
 	iris.Post("/ec/test", func(ctx *iris.Context){
 		url := string(ctx.FormValue("url"))
-		stepString := string(ctx.FormValue("step"))
-		step, _ := strconv.Atoi(stepString)
-		cpuNum := runtime.NumCPU()
+		//stepString := string(ctx.FormValue("step"))
+		//step, _ := strconv.Atoi(stepString)
+		//cpuNum := runtime.NumCPU()
 		wg := sync.WaitGroup{}
 		go func() {
-			for i := cpuNum; i <= 100000; i += (step - cpuNum) {
+			minCon := 0
+			maxCon := 100000
+			getAnswer := false
+			for !getAnswer {
 				wg.Add(1)
 				go func() {
+					currentTarget := (minCon +  maxCon) / 2
 					result := wrk.Run(url,
 						strconv.Itoa(runtime.NumCPU()),
- 						strconv.Itoa(i), "10s")
-					fmt.Printf("%f @ %d c\n",
-				 		float64(result.Non2xx3xx) / float64(result.Requests) * 100.0,
-						result.Connection)
+ 						strconv.Itoa(currentTarget), "10s")
+
+					errPercent := float64(result.Non2xx3xx) / float64(result.Requests) * 100.0
+					if (10 < errPercent) && (errPercent < 15 ){
+						getAnswer = true
+					}else if errPercent < 10{
+						minCon = currentTarget
+					}else if 15 < errPercent{
+						maxCon = currentTarget
+					}
+
+					fmt.Println(minCon, maxCon, errPercent)
 					wg.Done()
 				}()
 				wg.Wait()
