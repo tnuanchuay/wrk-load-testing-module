@@ -253,6 +253,9 @@ func main() {
  						strconv.Itoa(currentTarget), "10s")
 
 					errPercent := float64(result.Non2xx3xx) / float64(result.Requests) * 100.0
+
+					fmt.Println(minCon, maxCon, errPercent)
+
 					if (10 < errPercent) && (errPercent < 15 ){
 						getAnswer = true
 					}else if errPercent < 10{
@@ -260,12 +263,12 @@ func main() {
 					}else if 15 < errPercent{
 						maxCon = currentTarget
 					}
-
-					fmt.Println(minCon, maxCon, errPercent)
 					wg.Done()
 				}()
 				wg.Wait()
 			}
+			capacity := (minCon + maxCon) / 2
+			fmt.Println("capacity of ", url, "=", capacity)
 		}()
 	})
 
