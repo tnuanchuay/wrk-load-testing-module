@@ -238,14 +238,14 @@ func main() {
 		url := string(ctx.FormValue("url"))
 		stepString := string(ctx.FormValue("step"))
 		step, _ := strconv.Atoi(stepString)
-
+		cpuNum := runtime.NumCPU()
 		wg := sync.WaitGroup{}
 		go func() {
-			for i := runtime.NumCPU(); i <= 100000; i += step {
+			for i := cpuNum; i <= 100000; i += (step - cpuNum) {
 				wg.Add(1)
 				go func() {
 					result := wrk.Run(url, strconv.Itoa(runtime.NumCPU()), strconv.Itoa(i), "10s")
-					fmt.Printf("%d", result.Non2xx3xx)
+					fmt.Printf("%f%", result.Non2xx3xx / result.Requests *100.0)
 					wg.Done()
 				}()
 				wg.Wait()
