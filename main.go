@@ -244,11 +244,12 @@ func main() {
 			minCon := 0
 			maxCon := 100000
 			getAnswer := false
+			result := model.WrkResult{}
 			for !getAnswer {
 				wg.Add(1)
 				go func() {
 					currentTarget := (minCon +  maxCon) / 2
-					result := wrk.Run(url,
+					result = wrk.Run(url,
 						strconv.Itoa(runtime.NumCPU()),
  						strconv.Itoa(currentTarget), "10s")
 
@@ -256,11 +257,11 @@ func main() {
 
 					fmt.Println(minCon, maxCon, errPercent)
 
-					if (10 < errPercent) && (errPercent < 15 ){
+					if (5 < errPercent) && (errPercent < 10 ){
 						getAnswer = true
-					}else if errPercent < 10{
+					}else if errPercent < 5{
 						minCon = currentTarget
-					}else if 15 < errPercent{
+					}else if 10 < errPercent{
 						maxCon = currentTarget
 					}
 					wg.Done()
@@ -268,7 +269,7 @@ func main() {
 				wg.Wait()
 			}
 			capacity := (minCon + maxCon) / 2
-			fmt.Println("capacity of ", url, "=", capacity)
+			fmt.Println("capacity of ", url, "=", capacity, "and can work at delivery rate", result.RequestPerSec)
 		}()
 	})
 
