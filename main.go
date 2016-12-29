@@ -244,8 +244,12 @@ func main() {
 			for i := cpuNum; i <= 100000; i += (step - cpuNum) {
 				wg.Add(1)
 				go func() {
-					result := wrk.Run(url, strconv.Itoa(runtime.NumCPU()), strconv.Itoa(i), "10s")
-					fmt.Printf("%f%", result.Non2xx3xx / result.Requests *100.0)
+					result := wrk.Run(url,
+						strconv.Itoa(runtime.NumCPU()),
+ 						strconv.Itoa(i), "10s")
+					fmt.Printf("%f @ %d c\n",
+				 		float64(result.Non2xx3xx) / float64(result.Requests) * 100.0,
+						result.Connection)
 					wg.Done()
 				}()
 				wg.Wait()
