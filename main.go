@@ -51,7 +51,10 @@ func main() {
 
 	iris.Get("/result", func(ctx *iris.Context){
 		resultViewControl := view_controller.Result{}.GetViewControl(db)
-		ctx.Render("job.html", resultViewControl)
+		ctx.Render("job.html", map[string]interface{}{
+			"data":resultViewControl,
+			"host":ctx.HostString(),
+		})
 	})
 
 	iris.Get("/result/:id", func(ctx *iris.Context){

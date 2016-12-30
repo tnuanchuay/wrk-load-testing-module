@@ -144,9 +144,9 @@
 <script src="/assets/js/light-bootstrap-dashboard.js"></script>
 
 <script>
-    var data = JSON.parse(`{{ .Job }}`);
-    var testset = JSON.parse(`{{ .Testset }}`);
-    var ws = new Ws("ws://127.0.0.1:2559/end_point");
+    var data = JSON.parse(`{{ data.Job }}`);
+    var testset = JSON.parse(`{{ data.Testset }}`);
+    var ws = new Ws("ws://{{.host}}/end_point");
 
     function findTestSetById(id){
         for(var i = 0 ; i < testset.length ; i++){
