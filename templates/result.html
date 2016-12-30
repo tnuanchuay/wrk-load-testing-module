@@ -141,7 +141,7 @@
 
 <!--  Checkbox, Radio & Switch Plugins -->
 <script src="/assets/js/bootstrap-checkbox-radio-switch.js"></script>
-<script src="/assets/js/socket.io-1.4.5.js"></script>
+<script src="/iris-ws.js"></script>
 
 <!-- Light Bootstrap Table Core javascript and methods for Demo purpose -->
 <script src="/assets/js/light-bootstrap-dashboard.js"></script>
@@ -153,12 +153,12 @@
     var wrk = JSON.parse(`{{ .Result.Job.WrkResult }}`);
     var job = JSON.parse(`{{ .Result.Job }}`);
     var testset = JSON.parse(`{{ .Result.TestSet }}`)
-    var socket = io();
+    var ws = new Ws("ws://{{.Host}}/end_point");
 
     $("#compare").hide();
     $("#report").hide();
 
-    socket.on('_' + job.ID, function(rx){
+    ws.On('_' + job.ID, function(rx){
         var item = Math.round(rx.rx*testset.Testcase.length/100);
         console.log(item-1);
         if(rx.ok)
