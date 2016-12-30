@@ -9,3 +9,4 @@ pkg
 lua
 *.swp
 wrk-load-testing-module
+*.swo
