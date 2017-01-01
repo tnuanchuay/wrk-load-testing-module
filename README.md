@@ -10,6 +10,7 @@ The wg/wrk extension tool provides continuous load testing in range of connectio
 * Test by case
 * Realtime Test
 * Soaking Test
+* Estimate Function Capacity
 
 ### Require
 * [wg/wrk](https://github.com/wg/wrk)
