@@ -158,16 +158,19 @@
     $("#compare").hide();
     $("#report").hide();
 
-    ws.On('_' + job.ID, function(rx){
-        var item = Math.round(rx.rx*testset.Testcase.length/100);
-        console.log(item-1);
-        if(rx.ok)
+    ws.On('ROOM' + job.ID, function(rx){
+	var obj = JSON.parse(rx);
+        var item = Math.round(obj.progress*testset.Testcase.length/100);
+        console.log(obj);
+	console.log(item-1);
+	console.log(obj.progress);
+        if(obj.ok)
             $("#tbody-case").find("tr").eq(item-1).find("td").eq(4).html(`<span class="label label-success">Pass</span>`);
         else
             $("#tbody-case").find("tr").eq(item-1).find("td").eq(4).html(`<span class="label label-danger">Error</span>`);
 
         if(item == testset.Testcase.length){
-            location.reload();
+            //location.reload();
         }
     })
 
