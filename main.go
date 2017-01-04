@@ -51,7 +51,10 @@ func main() {
 
 	iris.Get("/result", func(ctx *iris.Context){
 		resultViewControl := view_controller.Result{}.GetViewControl(db)
-		ctx.Render("job.html", resultViewControl)
+		ctx.Render("job.html", struct{
+			Result		*view_controller.Result
+			Host		string
+		}{Result : resultViewControl, Host : ctx.HostString()})
 	})
 
 	iris.Get("/result/:id", func(ctx *iris.Context){
@@ -61,7 +64,10 @@ func main() {
 		if resultJobViewControl == nil{
 			ctx.Redirect("/result")
 		}else{
-			ctx.Render("result.html", resultJobViewControl)
+			ctx.Render("result.html", struct{
+				Result		*view_controller.JobResult
+				Host		string
+			}{Result : resultJobViewControl, Host : ctx.HostString()})
 		}
 	})
 

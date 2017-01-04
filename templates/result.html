@@ -93,7 +93,7 @@
 
                 </div>
                 <div>
-                    <a href="/result/{{.Job.ID}}/diff"><button id="compare" class="btn btn-primary">Compare</button></a>
+                    <a href="/result/{{.Result.Job.ID}}/diff"><button id="compare" class="btn btn-primary">Compare</button></a>
                     <a><button id="report" class="btn btn-primary">Report</button></a>
                 </div>
             </div>
@@ -103,9 +103,9 @@
         <div class="content">
             <div class="container-fluid">
                 <div>
-                    <div class="h3">{{ .Job.Name }} - Test Result</div>
-                    <div class="h4">Request to {{ .Job.RequestUrl }}</div>
-                    <div class="h4">Method {{ .Job.RequestMethod }}</div>
+                    <div class="h3">{{ .Result.Job.Name }} - Test Result</div>
+                    <div class="h4">Request to {{ .Result.Job.RequestUrl }}</div>
+                    <div class="h4">Method {{ .Result.Job.RequestMethod }}</div>
                     <table class="table">
                         <thead>
                         <tr>
@@ -142,7 +142,7 @@
 
 <!--  Checkbox, Radio & Switch Plugins -->
 <script src="/assets/js/bootstrap-checkbox-radio-switch.js"></script>
-<script src="/assets/js/socket.io-1.4.5.js"></script>
+<script src="/iris-ws.js"></script>
 
 <!-- Light Bootstrap Table Core javascript and methods for Demo purpose -->
 <script src="/assets/js/light-bootstrap-dashboard.js"></script>
@@ -151,24 +151,27 @@
 <script src="https://code.highcharts.com/modules/exporting.js"></script>
 
 <script>
-    var wrk = JSON.parse(`{{ .Job.WrkResult }}`);
-    var job = JSON.parse(`{{ .Job }}`);
-    var testset = JSON.parse(`{{ .TestSet }}`)
-    var socket = io();
+    var wrk = JSON.parse(`{{ .Result.Job.WrkResult }}`);
+    var job = JSON.parse(`{{ .Result.Job }}`);
+    var testset = JSON.parse(`{{ .Result.TestSet }}`)
+    var ws = new Ws("ws://{{.Host}}/end_point");
 
     $("#compare").hide();
     $("#report").hide();
 
-    socket.on('_' + job.ID, function(rx){
-        var item = Math.round(rx.rx*testset.Testcase.length/100);
-        console.log(item-1);
-        if(rx.ok)
+    ws.On('ROOM' + job.ID, function(rx){
+	var obj = JSON.parse(rx);
+        var item = Math.round(obj.progress*testset.Testcase.length/100);
+        console.log(obj);
+	console.log(item-1);
+	console.log(obj.progress);
+        if(obj.ok)
             $("#tbody-case").find("tr").eq(item-1).find("td").eq(4).html(`<span class="label label-success">Pass</span>`);
         else
             $("#tbody-case").find("tr").eq(item-1).find("td").eq(4).html(`<span class="label label-danger">Error</span>`);
 
         if(item == testset.Testcase.length){
-            location.reload();
+            //location.reload();
         }
     })
 
