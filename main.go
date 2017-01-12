@@ -38,7 +38,7 @@ func main() {
 
 	iris.Config.IsDevelopment = true
 
-	iris.Static("/assets", "./static/assets", 1)
+	iris.StaticWeb("/assets", "./static/assets")
 
 	iris.Get("/", func(ctx *iris.Context){
 		ctx.Redirect("/run")
@@ -54,7 +54,7 @@ func main() {
 		ctx.Render("job.html", struct{
 			Result		*view_controller.Result
 			Host		string
-		}{Result : resultViewControl, Host : ctx.HostString()})
+		}{Result : resultViewControl, Host : ctx.Host()})
 	})
 
 	iris.Get("/result/:id", func(ctx *iris.Context){
@@ -67,7 +67,7 @@ func main() {
 			ctx.Render("result.html", struct{
 				Result		*view_controller.JobResult
 				Host		string
-			}{Result : resultJobViewControl, Host : ctx.HostString()})
+			}{Result : resultJobViewControl, Host : ctx.Host()})
 		}
 	})
 
@@ -124,7 +124,7 @@ func main() {
 		name := string(ctx.FormValue("name"))
 		cpu := runtime.NumCPU()
 		duration := string(ctx.FormValue("duration"))
-		connections := ctx.FormValues("connection")
+		connections := ctx.FormValues()["connection"]
 
 		var testset model.Testset
 		testset.Name = name
@@ -158,7 +158,7 @@ func main() {
 		name := string(ctx.FormValue("name"))
 		cpu := runtime.NumCPU()
 		duration := string(ctx.FormValue("duration"))
-		connections := ctx.FormValues("connection")
+		connections := ctx.FormValues()["connection"]
 		id := string(ctx.FormValue("id"))
 
 		var testset model.Testset
@@ -209,8 +209,8 @@ func main() {
 		url := string(ctx.FormValue("url"))
 		method := string(ctx.FormValue("method"))
 		testset := string(ctx.FormValue("testset"))
-		keys := ctx.FormValues("key")
-		values := ctx.FormValues("value")
+		keys := ctx.FormValues()["key"]
+		values := ctx.FormValues()["value"]
 
 		var job model.Job
 		job.Name = name
