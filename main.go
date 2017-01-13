@@ -21,6 +21,13 @@ import (
 func main() {
 	var realtimeWrkEngine realtime.WrkEngine
 	var sockets	ws.GroupSocket
+	leakyBucket:= make(chan int)
+
+	go func(){
+		leakyBucket <- 1
+	}()
+
+
 	db, err := gorm.Open("sqlite3", "database.db")
 	if err != nil {
 		panic("Cannot open database")
@@ -313,6 +320,7 @@ func main() {
 			fmt.Println(msg)
 			request.Parse(msg)
 			if (realtimeWrkEngine.GetState() != request.EngineStatus) && (request.EngineStatus == true) {
+				<- leakyBucket
 				realtimeWrkEngine.SetConcurrency(request.Concurrency)
 				realtimeWrkEngine.SetSamplingTime(request.SamplingTime)
 				realtimeWrkEngine.SetUrl(request.Url)
@@ -322,6 +330,7 @@ func main() {
 				realtimeWrkEngine.SetSamplingTime(request.SamplingTime)
 			}else if request.EngineStatus == false {
 				realtimeWrkEngine.Stop()
+				leakyBucket <- 1
 			}
 		})
 	})
@@ -332,6 +341,7 @@ func main() {
 			select{
 			case job := <- wrkChannel:
 				wg.Add(1)
+			<- leakyBucket
 				go func(){
 					var testset model.Testset
 					db.Find(&testset, "id = ?", job.Testset).Related(&testset.Testcase)
@@ -350,6 +360,7 @@ func main() {
 					job.ExitInterrupt = false
 					db.Save(&job)
 					wg.Done()
+					leakyBucket <- 1
 				}()
 			}
 
@@ -393,11 +404,6 @@ func initializeTestset(db *gorm.DB) {
 	t1.Testcase = append(t1.Testcase,
 		model.Testcase{Thread:"4",
 			Connection:"10k",
-			Duration:"30s",
-		})
-	t1.Testcase = append(t1.Testcase,
-		model.Testcase{Thread:"4",
-			Connection:"100k",
 			Duration:"30s",
 		})
 
