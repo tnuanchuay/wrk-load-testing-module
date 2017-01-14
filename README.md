@@ -27,7 +27,10 @@ The wg/wrk extension tool provides continuous load testing in range of connectio
 git clone https://github.com/wg/wrk.git
 cd wrk
 make
-sudo install 0755 wrk /bin
+```
+lazy ?
+```
+sudo apt-get install wrk
 ```
 * Installation
 ```
