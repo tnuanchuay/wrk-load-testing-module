@@ -16,9 +16,9 @@ import (
 type WrkEngine struct{
 	status bool
 	Concurrency	int
-	samplingTime	int
-	url		string
-	resultJob	[]model.WrkResult
+	SamplingTime	int
+	Url		string
+	ResultJob	[]model.WrkResult
 	wg		sync.WaitGroup
 }
 
@@ -28,9 +28,9 @@ func (j *WrkEngine) GetState() bool{
 
 func (j *WrkEngine) SetSamplingTime(time int){
 	if time == 0{
-		j.samplingTime = 1
+		j.SamplingTime = 1
 	}else{
-		j.samplingTime = time
+		j.SamplingTime = time
 	}
 }
 
@@ -43,7 +43,7 @@ func (j *WrkEngine) SetConcurrency(concurrent int){
 }
 
 func (j *WrkEngine) SetUrl(url string){
-	j.url = url
+	j.Url = url
 }
 
 func (*WrkEngine)New()*WrkEngine{
@@ -52,9 +52,9 @@ func (*WrkEngine)New()*WrkEngine{
 
 func (j *WrkEngine) Stop(){
 	j.status = false;
-	j.samplingTime = 0
+	j.SamplingTime = 0
 	j.Concurrency = runtime.NumCPU()
-	j.url = ""
+	j.Url = ""
 }
 
 func (j *WrkEngine) Start(so iris.WebsocketConnection){
@@ -66,21 +66,25 @@ func (j *WrkEngine) Start(so iris.WebsocketConnection){
 				var testcase model.Testcase
 				testcase.Thread = strconv.Itoa(runtime.NumCPU())
 				testcase.Connection = strconv.Itoa(j.Concurrency)
-				testcase.Duration = strconv.Itoa(j.samplingTime)
-				result := j.RunForResult(testcase, j.url)
-				j.resultJob = append(j.resultJob, *result)
+				testcase.Duration = strconv.Itoa(j.SamplingTime)
+				result := j.RunForResult(testcase, j.Url)
+				j.ResultJob = append(j.ResultJob, *result)
 				j.wg.Done()
 			}()
 			j.wg.Wait()
-			var result = j.resultJob[len(j.resultJob)-1]
+			var result = j.ResultJob[len(j.ResultJob)-1]
 			if result.IsError {
 				j.status = false
 				(so).Emit("err", "err")
 			}else{
-			data := map[string]interface{}{
-				"rps" : result.RequestPerSec,
-				"errratio" : (float64(result.Non2xx3xx) / float64(result.Requests)),
-			}
+				data := map[string]interface{}{
+					"status" : j.status,
+					"url" : j.Url,
+					"concurrecy" : j.Concurrency,
+					"sampling" : j.SamplingTime,
+					"rps" : result.RequestPerSec,
+					"errratio" : (float64(result.Non2xx3xx) / float64(result.Requests)),
+				}
 				jsonData, _ := json.Marshal(data)
 				(so).Emit("data", jsonData)
 			}

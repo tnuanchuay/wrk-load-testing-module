@@ -20,7 +20,9 @@ import (
 
 func main() {
 	var realtimeWrkEngine realtime.WrkEngine
-	var sockets	ws.GroupSocket
+	var sockets		ws.GroupSocket
+	var realtimeSocket	ws.GroupSocket
+	realtimeInUsed := false
 	leakyBucket:= make(chan int)
 
 	go func(){
@@ -239,8 +241,22 @@ func main() {
 		ctx.Redirect("/")
 	})
 
+	iris.Get("/realtime/reset", func(ctx *iris.Context){
+		realtimeWrkEngine.Stop()
+		realtimeInUsed = false
+		go func(){
+			leakyBucket <- 1
+		}()
+		realtimeSocket.DisconnectAll()
+		ctx.Redirect("/realtime")
+	})
+
 	iris.Get("/realtime", func(ctx *iris.Context){
-		ctx.Render("realtime.html", nil)
+		if !realtimeInUsed {
+			ctx.Render("realtime.html", map[string]interface{}{"Host" : ctx.Host()})
+		}else{
+			ctx.Render("realtimebusy.html", nil)
+		}
 	})
 
 	iris.Get("/ec", func(ctx *iris.Context){
@@ -264,7 +280,7 @@ func main() {
 					currentTarget := (minCon +  maxCon) / 2
 					result = wrk.Run(url,
 						strconv.Itoa(runtime.NumCPU()),
- 						strconv.Itoa(currentTarget), "10s")
+						strconv.Itoa(currentTarget), "10s")
 
 					errPercent := float64(result.Non2xx3xx) / float64(result.Requests) * 100.0
 
@@ -292,7 +308,6 @@ func main() {
 	iris.Websocket.OnConnection(func (c iris.WebsocketConnection){
 		sockets.Sockets = append(sockets.Sockets, &c)
 		c.On("get-progress", func(msg string){
-
 			i, _ := strconv.Atoi(msg)
 			progress := jobProgress[uint(i)]
 
@@ -306,13 +321,17 @@ func main() {
 				};
 			}else {
 				interfaceValue = map[string]interface{}{
-						"progress":fmt.Sprintf("%.2f",jobProgress[job.ID]),
-						"ok":true,
-					}
+					"progress":fmt.Sprintf("%.2f",jobProgress[job.ID]),
+					"ok":true,
+				}
 			}
 
 			c.Emit("ROOM" + strconv.Itoa(int(job.ID)), interfaceValue)
 			time.Sleep(10*time.Millisecond)
+		})
+
+		c.On("regis", func(msg string){
+			realtimeSocket.Sockets = append(realtimeSocket.Sockets, &c)
 		})
 
 		c.On("realtime", func(msg string){
@@ -325,12 +344,15 @@ func main() {
 				realtimeWrkEngine.SetSamplingTime(request.SamplingTime)
 				realtimeWrkEngine.SetUrl(request.Url)
 				realtimeWrkEngine.Start(c)
+				realtimeInUsed = true
+				realtimeSocket.DisconnectAllExcept(c)
 			}else if (realtimeWrkEngine.GetState() == request.EngineStatus) && (request.EngineStatus == true){
 				realtimeWrkEngine.SetConcurrency(request.Concurrency)
 				realtimeWrkEngine.SetSamplingTime(request.SamplingTime)
 			}else if request.EngineStatus == false {
 				realtimeWrkEngine.Stop()
 				leakyBucket <- 1
+				realtimeInUsed = false
 			}
 		})
 	})
@@ -341,7 +363,7 @@ func main() {
 			select{
 			case job := <- wrkChannel:
 				wg.Add(1)
-			<- leakyBucket
+				<- leakyBucket
 				go func(){
 					var testset model.Testset
 					db.Find(&testset, "id = ?", job.Testset).Related(&testset.Testcase)

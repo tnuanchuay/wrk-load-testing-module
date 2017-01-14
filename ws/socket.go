@@ -10,7 +10,27 @@ type GroupSocket struct{
 	Sockets	[]*iris.WebsocketConnection
 }
 
+
+func (r *GroupSocket) DisconnectAll(){
+	for _, so := range r.Sockets{
+		(*so).Disconnect()
+	}
+	r = new(GroupSocket)
+}
+
+func (r *GroupSocket) DisconnectAllExcept(so iris.WebsocketConnection){
+	for i, s := range r.Sockets{
+		if (*s).ID() != so.ID(){
+			r.Sockets = append(r.Sockets[:i], r.Sockets[i+1:]...)
+			(*s).Disconnect()
+			break;
+		}
+
+	}
+}
+
 func (r *GroupSocket) Disconnect(so iris.WebsocketConnection){
+	so.Disconnect()
 	for i, s := range r.Sockets{
 		if (*s).ID() == so.ID(){
 			r.Sockets = append(r.Sockets[:i], r.Sockets[i+1:]...)
