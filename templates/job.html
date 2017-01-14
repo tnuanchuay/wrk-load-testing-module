@@ -148,6 +148,10 @@
     var testset = JSON.parse(`{{.Result.Testset}}`);
     var ws = new Ws("ws://{{.Host}}/end_point");
 
+    ws.OnConnect(function(){
+        ws.Emit("regis", "/result")
+    })
+
     function findTestSetById(id){
         for(var i = 0 ; i < testset.length ; i++){
             if(testset[i].ID == id)

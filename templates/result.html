@@ -156,6 +156,10 @@
     var testset = JSON.parse(`{{ .Result.TestSet }}`)
     var ws = new Ws("ws://{{.Host}}/end_point");
 
+    ws.OnConnect(function(){
+        ws.Emit("regis", "/result")
+    })
+
     $("#compare").hide();
     $("#report").hide();
 

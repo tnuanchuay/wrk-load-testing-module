@@ -30,10 +30,11 @@ func (r *GroupSocket) DisconnectAllExcept(so iris.WebsocketConnection){
 }
 
 func (r *GroupSocket) Disconnect(so iris.WebsocketConnection){
-	so.Disconnect()
+
 	for i, s := range r.Sockets{
 		if (*s).ID() == so.ID(){
 			r.Sockets = append(r.Sockets[:i], r.Sockets[i+1:]...)
+			so.Disconnect()
 			break;
 		}
 

@@ -306,7 +306,6 @@ func main() {
 	iris.Config.Websocket.WriteBufferSize = 10000
 
 	iris.Websocket.OnConnection(func (c iris.WebsocketConnection){
-		sockets.Sockets = append(sockets.Sockets, &c)
 		c.On("get-progress", func(msg string){
 			i, _ := strconv.Atoi(msg)
 			progress := jobProgress[uint(i)]
@@ -331,8 +330,18 @@ func main() {
 		})
 
 		c.On("regis", func(msg string){
-			realtimeSocket.Sockets = append(realtimeSocket.Sockets, &c)
+			switch msg {
+			case "/realtime":
+				realtimeSocket.Sockets = append(realtimeSocket.Sockets, &c)
+			case "/result":
+				sockets.Sockets = append(sockets.Sockets, &c)
+			}
 		})
+
+		//c.OnDisconnect(func (){
+		//	realtimeSocket.Disconnect(c)
+		//	sockets.Disconnect(c)
+		//})
 
 		c.On("realtime", func(msg string){
 			var request realtime.Request
