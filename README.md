@@ -6,6 +6,23 @@ The wg/wrk extension tool provides continuous load testing in range of connectio
 * Socket Error
 * Non-2xx Response
 
+### Install Instruction
+* Install Golang
+* Install wrk
+```
+git clone https://github.com/wg/wrk.git
+cd wrk
+make
+```
+lazy ?
+```
+sudo apt-get install wrk
+```
+* Installation
+```
+go get github.com/tspn/wrk-load-testing-module
+```
+
 ### Mode
 * Test by case
 * Realtime Test
@@ -20,16 +37,4 @@ The wg/wrk extension tool provides continuous load testing in range of connectio
 * Linux
 * OSX
 
-### Install Instruction
-* Install Golang
-* Install wrk
-```
-git clone https://github.com/wg/wrk.git
-cd wrk
-make
-sudo install 0755 wrk /bin
-```
-* Installation
-```
-go get github.com/tspn/wrk-load-testing-module
-```
+
