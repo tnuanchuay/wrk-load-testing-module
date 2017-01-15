@@ -247,7 +247,9 @@ func main() {
 		go func(){
 			leakyBucket <- 1
 		}()
-		realtimeSocket.DisconnectAll()
+		realtimeSocket.BroadCast("exit", map[string]interface{}{
+			"exit":"exit",
+		})
 		ctx.Redirect("/realtime")
 	})
 
@@ -257,6 +259,8 @@ func main() {
 		}else{
 			ctx.Render("realtimebusy.html", nil)
 		}
+
+		fmt.Println("realtimeInUsed =", realtimeInUsed)
 	})
 
 	iris.Get("/ec", func(ctx *iris.Context){
@@ -338,11 +342,6 @@ func main() {
 			}
 		})
 
-		//c.OnDisconnect(func (){
-		//	realtimeSocket.Disconnect(c)
-		//	sockets.Disconnect(c)
-		//})
-
 		c.On("realtime", func(msg string){
 			var request realtime.Request
 			fmt.Println(msg)
@@ -354,15 +353,21 @@ func main() {
 				realtimeWrkEngine.SetUrl(request.Url)
 				realtimeWrkEngine.Start(c)
 				realtimeInUsed = true
-				realtimeSocket.DisconnectAllExcept(c)
+				realtimeSocket.BroadcastAllExcept("exit", map[string]interface{}{
+					"exit":"exit",
+				}, c)
 			}else if (realtimeWrkEngine.GetState() == request.EngineStatus) && (request.EngineStatus == true){
 				realtimeWrkEngine.SetConcurrency(request.Concurrency)
 				realtimeWrkEngine.SetSamplingTime(request.SamplingTime)
 			}else if request.EngineStatus == false {
 				realtimeWrkEngine.Stop()
-				leakyBucket <- 1
+				go func(){
+					leakyBucket <- 1
+				}()
 				realtimeInUsed = false
 			}
+
+			fmt.Println("realtimeInUsed =", realtimeInUsed)
 		})
 	})
 
@@ -402,6 +407,7 @@ func main() {
 
 	iris.Listen(":2559")
 }
+
 func initializeTestset(db *gorm.DB) {
 	var t1 model.Testset
 

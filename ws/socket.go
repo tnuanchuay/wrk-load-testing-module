@@ -10,6 +10,16 @@ type GroupSocket struct{
 	Sockets	[]*iris.WebsocketConnection
 }
 
+func (r *GroupSocket) BroadcastAllExcept(channel string, data map[string]interface{}, so iris.WebsocketConnection){
+	b, _ := json.Marshal(data)
+	for _, s := range r.Sockets{
+		if (*s).ID() != so.ID(){
+			(*s).Emit(channel, string(b))
+			time.Sleep(10 * time.Millisecond)
+		}
+	}
+}
+
 
 func (r *GroupSocket) DisconnectAll(){
 	for _, so := range r.Sockets{
