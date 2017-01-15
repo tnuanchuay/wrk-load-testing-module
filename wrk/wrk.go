@@ -27,6 +27,7 @@ func Run(url, t, c, d string) model.WrkResult{
 	}()
 	command.Start()
 	command.Wait()
+
 	fmt.Println(out)
 
 	wrk := model.WrkResult{}

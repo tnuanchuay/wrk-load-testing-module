@@ -1,20 +1,14 @@
 package main
 
-import "fmt"
+import (
+	"github.com/kataras/iris"
+	"time"
+)
 
-func test(){
-	number := 68523
-	min := 0
-	max := 100000
-	for {
-		if (min + max) / 2 < number {
-			min = (min + max) / 2
-		}else if (min + max) / 2 > number{
-			max = (min + max) / 2
-		}else{
-			fmt.Println((min + max) /2, "END")
-			break;
-		}
-		fmt.Println(max, min)
-	}
+func main(){
+	iris.Get("/", func(ctx *iris.Context){
+		time.Sleep(1 * time.Millisecond)
+		ctx.JSON(200, "ok")
+	})
+	iris.Listen(":8080")
 }

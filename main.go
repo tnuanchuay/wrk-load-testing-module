@@ -278,6 +278,8 @@ func main() {
 			maxCon := 10000
 			socketErrorNum := 0
 			getAnswer := false
+			testCount := 0
+			sumSamplingData := 0
 			result := model.WrkResult{}
 			for !getAnswer {
 				wg.Add(1)
@@ -293,7 +295,9 @@ func main() {
 						fmt.Println("error", url, currentTarget)
 						return
 					}
-
+					testCount++
+					sumSamplingData += result.Connection
+					fmt.Println("avg", sumSamplingData / testCount)
 					socketErrorNum = result.SocketErrors_Connection + result.SocketErrors_Read + result.SocketErrors_Timeout + result.SocketErrors_Write
 
 					errPercent := float64(result.Non2xx3xx) / float64(result.Requests) * 100.0
@@ -320,9 +324,9 @@ func main() {
 
 					if float64(minCon) / float64(maxCon) > 0.99 && socketErrorNum == 0{
 						fmt.Println("nearly max", float64(minCon) / float64(maxCon))
-						maxCon *= (125 / 100)
+						minCon = maxCon
+						maxCon = maxCon * 125 / 100
 					}
-
 
 
 				}()
