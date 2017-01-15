@@ -275,29 +275,56 @@ func main() {
 		wg := sync.WaitGroup{}
 		go func() {
 			minCon := 0
-			maxCon := 100000
+			maxCon := 10000
+			socketErrorNum := 0
 			getAnswer := false
 			result := model.WrkResult{}
 			for !getAnswer {
 				wg.Add(1)
 				go func() {
+					defer time.Sleep(5 * time.Second)
+					defer wg.Done()
 					currentTarget := (minCon +  maxCon) / 2
 					result = wrk.Run(url,
 						strconv.Itoa(runtime.NumCPU()),
 						strconv.Itoa(currentTarget), "10s")
 
+					if result.IsError {
+						fmt.Println("error", url, currentTarget)
+						return
+					}
+
+					socketErrorNum = result.SocketErrors_Connection + result.SocketErrors_Read + result.SocketErrors_Timeout + result.SocketErrors_Write
+
 					errPercent := float64(result.Non2xx3xx) / float64(result.Requests) * 100.0
 
-					fmt.Println(minCon, maxCon, errPercent)
+					fmt.Println("result", minCon, maxCon, errPercent)
 
-					if (5 < errPercent) && (errPercent < 10 ){
+					if socketErrorNum != 0{
+						maxCon = currentTarget - socketErrorNum
+						if minCon > maxCon{
+							temp := minCon
+							minCon = maxCon
+							maxCon = temp
+						}
+						return
+					}
+
+					if (1 < errPercent) && (errPercent < 5 ){
 						getAnswer = true
-					}else if errPercent < 5{
+					}else if errPercent < 1{
 						minCon = currentTarget
-					}else if 10 < errPercent{
+					}else if 5 < errPercent{
 						maxCon = currentTarget
 					}
-					wg.Done()
+
+					if float64(minCon) / float64(maxCon) > 0.99 && socketErrorNum == 0{
+						fmt.Println("nearly max", float64(minCon) / float64(maxCon))
+						maxCon *= (125 / 100)
+					}
+
+
+
 				}()
 				wg.Wait()
 			}
