@@ -148,13 +148,21 @@
 <script src="https://code.highcharts.com/highcharts.js"></script>
 <script src="https://code.highcharts.com/modules/exporting.js"></script>
 <script>
-    var ws = new Ws("ws://127.0.0.1:2559/end_point");
+    var ws = new Ws("ws://{{.Host}}/end_point");
     var protocol = {
         e : false,
         c : 0,
         d : 5,
         url : "",
     };
+
+    ws.OnConnect(function(){
+        ws.Emit('regis', '/realtime')
+    })
+
+    ws.On("exit", function(){
+        window.location.reload();
+    })
 
     $(document).ready(function(){
         var cc = $('#cc');
