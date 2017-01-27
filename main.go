@@ -275,12 +275,10 @@ func main() {
 		wg := sync.WaitGroup{}
 		go func() {
 			minCon := 0
-			maxCon := 10000
+			maxCon := 50000
 			socketErrorNum := 0
-			getAnswer := false
-			testCount := 0
-			sumSamplingData := 0
 			result := model.WrkResult{}
+			getAnswer := false
 			for !getAnswer {
 				wg.Add(1)
 				go func() {
@@ -290,22 +288,20 @@ func main() {
 					result = wrk.Run(url,
 						strconv.Itoa(runtime.NumCPU()),
 						strconv.Itoa(currentTarget), "10s")
-
+					time.Sleep(5 * time.Second)
 					if result.IsError {
 						fmt.Println("error", url, currentTarget)
 						return
 					}
-					testCount++
-					sumSamplingData += result.Connection
-					fmt.Println("avg", sumSamplingData / testCount)
-					socketErrorNum = result.SocketErrors_Connection + result.SocketErrors_Read + result.SocketErrors_Timeout + result.SocketErrors_Write
 
-					errPercent := float64(result.Non2xx3xx) / float64(result.Requests) * 100.0
+					socketErrorNum = result.SocketErrors_Connection 
 
-					fmt.Println("result", minCon, maxCon, errPercent)
+					socketErrPercentage := float64(result.Non2xx3xx) / float64(result.Requests) * 100.0
+
+					fmt.Println("result", minCon, maxCon, socketErrPercentage)
 
 					if socketErrorNum != 0{
-						maxCon = currentTarget - socketErrorNum
+						maxCon = currentTarget - int(float64(socketErrorNum) * 0.25)
 						if minCon > maxCon{
 							temp := minCon
 							minCon = maxCon
@@ -314,21 +310,17 @@ func main() {
 						return
 					}
 
-					if (1 < errPercent) && (errPercent < 5 ){
+					if ((1 < socketErrPercentage) && (socketErrPercentage < 5 )) && (currentTarget == maxCon){
 						getAnswer = true
-					}else if errPercent < 1{
+					}else if socketErrPercentage < 1{
 						minCon = currentTarget
-					}else if 5 < errPercent{
+					}else if 5 < socketErrPercentage {
 						maxCon = currentTarget
 					}
 
-					if float64(minCon) / float64(maxCon) > 0.99 && socketErrorNum == 0{
-						fmt.Println("nearly max", float64(minCon) / float64(maxCon))
-						minCon = maxCon
-						maxCon = maxCon * 125 / 100
+					if float64(minCon) / float64(maxCon) > 0.99{
+						getAnswer = true
 					}
-
-
 				}()
 				wg.Wait()
 			}
