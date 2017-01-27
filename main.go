@@ -310,7 +310,7 @@ func main() {
 						return
 					}
 
-					if ((1 < socketErrPercentage) && (socketErrPercentage < 5 )) && (currentTarget == maxCon){
+					if ((1 < socketErrPercentage) && (socketErrPercentage < 5 )) || (currentTarget == maxCon){
 						getAnswer = true
 					}else if socketErrPercentage < 1{
 						minCon = currentTarget
