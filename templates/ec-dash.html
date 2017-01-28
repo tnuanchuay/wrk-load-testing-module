@@ -89,7 +89,7 @@
                         <span class="icon-bar"></span>
                         <span class="icon-bar"></span>
                     </button>
-                    <a class="navbar-brand" href="#">Dashboard</a>
+                    <a class="navbar-brand" href="#">Estimate Connection</a>
                 </div>
             </div>
         </nav>
@@ -129,5 +129,22 @@
 
 <!-- Light Bootstrap Table Core javascript and methods for Demo purpose -->
 <script src="/assets/js/light-bootstrap-dashboard.js"></script>
-
+<script>
+    var data = {{.Jobs}};
+    for(var i = 0 ; i < data.length; i++){
+        var item = data[i];
+        $("#data").append(`
+            <tr>
+            <td>${i+1}</td>
+            <td>${item.Url}</td>
+            <td>${item.LowNumber}</td>
+            <td>${item.HighNumber}</td>
+            <td>${item.Estimate}</td>
+            <td>${item.ReadError}</td>
+            <td>${item.WriteError}</td>
+            <td>${item.TimeoutError}</td>
+            </tr>
+        `);
+    }
+</script>
 </html>

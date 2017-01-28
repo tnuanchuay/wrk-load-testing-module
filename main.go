@@ -18,6 +18,10 @@ import (
 	"github.com/tspn/wrk-load-testing-module/wrk"
 )
 
+const(
+	EC_WAIT_TIME		=	70
+)
+
 func main() {
 	var realtimeWrkEngine realtime.WrkEngine
 	var sockets		ws.GroupSocket
@@ -264,21 +268,20 @@ func main() {
 	})
 
 	iris.Get("/ec", func(ctx *iris.Context){
-		ctx.Render("ec.html", nil)
-	})
-
-	iris.Get("/ec/board", func(ctx *iris.Context){
-		ctx.Render("ec-dash.html", nil)
+		vc := view_controller.ECDashPage{}.GetPageViewControl(db)
+		ctx.Render("ec.html", vc)
 	})
 
 	iris.Post("/ec/test", func(ctx *iris.Context){
 		url := string(ctx.FormValue("url"))
-		ctx.Redirect("/ec/board", 302)
-		//stepString := string(ctx.FormValue("step"))
-		//step, _ := strconv.Atoi(stepString)
-		//cpuNum := runtime.NumCPU()
+		ecResult := model.ECJob{}
+		ecResult.Url = url
+		ecResult.IsDone = 0
+		db.Save(&ecResult)
+		ctx.Redirect("/ec", 302)
 		wg := sync.WaitGroup{}
 		go func() {
+			<- leakyBucket
 			minCon := 0
 			maxCon := 50000
 			socketErrorNum := 0
@@ -292,7 +295,7 @@ func main() {
 					result = wrk.Run(url,
 						strconv.Itoa(runtime.NumCPU()),
 						strconv.Itoa(currentTarget), "10s")
-					time.Sleep(60 * time.Second)
+					time.Sleep(EC_WAIT_TIME * time.Second)
 					if result.IsError {
 						fmt.Println("error", url, currentTarget)
 						return
@@ -330,6 +333,15 @@ func main() {
 			}
 			capacity := (minCon + maxCon) / 2
 			fmt.Println("capacity of ", url, "=", capacity, "and can work at delivery rate", result.RequestPerSec)
+			ecResult.LowNumber = minCon
+			ecResult.HighNumber = maxCon
+			ecResult.Estimate = capacity
+			ecResult.IsDone = 1
+			ecResult.TimeoutError = result.SocketErrors_Timeout
+			ecResult.WriteError = result.SocketErrors_Write
+			ecResult.ReadError = result.SocketErrors_Read
+			db.Save(&ecResult)
+			leakyBucket <- 1
 		}()
 	})
 
@@ -479,4 +491,5 @@ func initializeModel(db *gorm.DB){
 	db.AutoMigrate(&model.Testcase{})
 	db.AutoMigrate(&model.Testset{})
 	db.AutoMigrate(&model.WrkResult{})
+	db.AutoMigrate(&model.ECJob{})
 }
