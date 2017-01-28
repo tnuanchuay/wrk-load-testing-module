@@ -156,15 +156,24 @@
 
 <!--  Notifications Plugin    -->
 <script src="/assets/js/bootstrap-notify.js"></script>
-
+<script src="/iris-ws.js"></script>
 <!--  Google Maps Plugin    -->
 <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?sensor=false"></script>
 
 <!-- Light Bootstrap Table Core javascript and methods for Demo purpose -->
 <script src="/assets/js/light-bootstrap-dashboard.js"></script>
 <script>
-    var data = {{.Jobs}};
-    for(var i = 0 ; i < data.length; i++){
+    var host = {{.Host}};
+    var data = {{.Result.Jobs}};
+    var ws = new Ws("ws://{{.Host}}/end_point");
+
+
+    $(document).ready(function(){
+        ws.Emit("regis", "/ec");
+        ws.On("refresh", function(msg){
+            window.location.reload();
+        });
+        for(var i = 0 ; i < data.length; i++){
         var item = data[i];
         if(item.IsDone == 0){
         $("#data").append(`
@@ -196,6 +205,8 @@
                 </tr>
             `);
         }
+    });
+
     }
 </script>
 </html>

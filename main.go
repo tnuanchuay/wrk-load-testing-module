@@ -25,7 +25,8 @@ const(
 func main() {
 	var realtimeWrkEngine realtime.WrkEngine
 	var sockets		ws.GroupSocket
-	var realtimeSocket	ws.GroupSocket
+	var realtimeSockets	 ws.GroupSocket
+	var ecSockets		ws.GroupSocket
 	realtimeInUsed := false
 	leakyBucket:= make(chan int)
 
@@ -251,7 +252,7 @@ func main() {
 		go func(){
 			leakyBucket <- 1
 		}()
-		realtimeSocket.BroadCast("exit", map[string]interface{}{
+		realtimeSockets.BroadCast("exit", map[string]interface{}{
 			"exit":"exit",
 		})
 		ctx.Redirect("/realtime")
@@ -269,7 +270,10 @@ func main() {
 
 	iris.Get("/ec", func(ctx *iris.Context){
 		vc := view_controller.ECDashPage{}.GetPageViewControl(db)
-		ctx.Render("ec.html", vc)
+		ctx.Render("ec.html", map[string]interface{}{
+			"Result" : vc,
+			"Host" : ctx.Host(),
+		})
 	})
 
 	iris.Post("/ec/test", func(ctx *iris.Context){
@@ -308,7 +312,7 @@ func main() {
 					fmt.Println("result", minCon, maxCon, successRequestRatio)
 
 					if socketErrorNum != 0{
-						maxCon = currentTarget - int(float64(socketErrorNum) * 0.25)
+						maxCon = currentTarget - int(float64(socketErrorNum) * 0.50)
 						if minCon > maxCon{
 							temp := minCon
 							minCon = maxCon
@@ -343,6 +347,7 @@ func main() {
 			ecResult.ReadError = result.SocketErrors_Read
 			db.Save(&ecResult)
 			leakyBucket <- 1
+			ecSockets.BroadCast("refresh", map[string]interface{}{"command" : "need to refresh"})
 		}()
 	})
 
@@ -376,9 +381,11 @@ func main() {
 		c.On("regis", func(msg string){
 			switch msg {
 			case "/realtime":
-				realtimeSocket.Sockets = append(realtimeSocket.Sockets, &c)
+				realtimeSockets.Sockets = append(realtimeSockets.Sockets, &c)
 			case "/result":
 				sockets.Sockets = append(sockets.Sockets, &c)
+			case "/ec":
+				ecSockets.Sockets = append(ecSockets.Sockets, &c)
 			}
 		})
 
@@ -393,7 +400,7 @@ func main() {
 				realtimeWrkEngine.SetUrl(request.Url)
 				realtimeWrkEngine.Start(c)
 				realtimeInUsed = true
-				realtimeSocket.BroadcastAllExcept("exit", map[string]interface{}{
+				realtimeSockets.BroadcastAllExcept("exit", map[string]interface{}{
 					"exit":"exit",
 				}, c)
 			}else if (realtimeWrkEngine.GetState() == request.EngineStatus) && (request.EngineStatus == true){
