@@ -303,9 +303,9 @@ func main() {
 
 					socketErrorNum = result.SocketErrors_Connection 
 
-					socketErrPercentage := float64(result.Non2xx3xx) / float64(result.Requests) * 100.0
+					successRequestRatio := float64(result.Non2xx3xx) / float64(result.Requests) * 100.0
 
-					fmt.Println("result", minCon, maxCon, socketErrPercentage)
+					fmt.Println("result", minCon, maxCon, successRequestRatio)
 
 					if socketErrorNum != 0{
 						maxCon = currentTarget - int(float64(socketErrorNum) * 0.25)
@@ -317,11 +317,11 @@ func main() {
 						return
 					}
 
-					if ((1 < socketErrPercentage) && (socketErrPercentage < 5 )) || (currentTarget == maxCon){
+					if ((1 < successRequestRatio) && (successRequestRatio < 5 )) || (currentTarget == maxCon){
 						getAnswer = true
-					}else if socketErrPercentage < 1{
+					}else if successRequestRatio < 1{
 						minCon = currentTarget
-					}else if 5 < socketErrPercentage {
+					}else if 5 < successRequestRatio {
 						maxCon = currentTarget
 					}
 
@@ -333,6 +333,7 @@ func main() {
 			}
 			capacity := (minCon + maxCon) / 2
 			fmt.Println("capacity of ", url, "=", capacity, "and can work at delivery rate", result.RequestPerSec)
+			ecResult.RequestPerSec = result.RequestPerSec
 			ecResult.LowNumber = minCon
 			ecResult.HighNumber = maxCon
 			ecResult.Estimate = capacity
