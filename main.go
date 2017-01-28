@@ -282,13 +282,12 @@ func main() {
 			for !getAnswer {
 				wg.Add(1)
 				go func() {
-					defer time.Sleep(5 * time.Second)
 					defer wg.Done()
 					currentTarget := (minCon +  maxCon) / 2
 					result = wrk.Run(url,
 						strconv.Itoa(runtime.NumCPU()),
 						strconv.Itoa(currentTarget), "10s")
-					time.Sleep(5 * time.Second)
+					time.Sleep(60 * time.Second)
 					if result.IsError {
 						fmt.Println("error", url, currentTarget)
 						return
