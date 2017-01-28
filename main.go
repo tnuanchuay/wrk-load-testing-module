@@ -267,8 +267,13 @@ func main() {
 		ctx.Render("ec.html", nil)
 	})
 
+	iris.Get("/ec/board", func(ctx *iris.Context){
+		ctx.Render("ec-dash.html", nil)
+	})
+
 	iris.Post("/ec/test", func(ctx *iris.Context){
 		url := string(ctx.FormValue("url"))
+		ctx.Redirect("/ec/board", 302)
 		//stepString := string(ctx.FormValue("step"))
 		//step, _ := strconv.Atoi(stepString)
 		//cpuNum := runtime.NumCPU()
