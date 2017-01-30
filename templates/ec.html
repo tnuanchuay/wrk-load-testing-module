@@ -153,12 +153,7 @@
 
 <!--  Charts Plugin -->
 <script src="/assets/js/chartist.min.js"></script>
-
-<!--  Notifications Plugin    -->
-<script src="/assets/js/bootstrap-notify.js"></script>
 <script src="/iris-ws.js"></script>
-<!--  Google Maps Plugin    -->
-<script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?sensor=false"></script>
 
 <!-- Light Bootstrap Table Core javascript and methods for Demo purpose -->
 <script src="/assets/js/light-bootstrap-dashboard.js"></script>
@@ -169,6 +164,7 @@
 	ws.OnConnect(function(){
 		ws.Emit("regis", "/ec");
 		ws.On("refresh", function(){
+            console.log("refresh");
 			window.location.reload();
 		})
 	})

@@ -346,8 +346,9 @@ func main() {
 			ecResult.WriteError = result.SocketErrors_Write
 			ecResult.ReadError = result.SocketErrors_Read
 			db.Save(&ecResult)
-			leakyBucket <- 1
+			fmt.Println(len(ecSockets.Sockets))
 			ecSockets.BroadCast("refresh", map[string]interface{}{"command" : "need to refresh"})
+			leakyBucket <- 1
 		}()
 	})
 
@@ -355,6 +356,13 @@ func main() {
 	iris.Config.Websocket.WriteBufferSize = 10000
 
 	iris.Websocket.OnConnection(func (c iris.WebsocketConnection){
+
+		c.OnDisconnect(func(){
+			ecSockets.Disconnect(c)
+			sockets.Disconnect(c)
+			realtimeSockets.Disconnect(c)
+		})
+
 		c.On("get-progress", func(msg string){
 			i, _ := strconv.Atoi(msg)
 			progress := jobProgress[uint(i)]
@@ -386,6 +394,7 @@ func main() {
 				sockets.Sockets = append(sockets.Sockets, &c)
 			case "/ec":
 				ecSockets.Sockets = append(ecSockets.Sockets, &c)
+				fmt.Println(len(ecSockets.Sockets))
 			}
 		})
 
