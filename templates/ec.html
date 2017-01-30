@@ -161,15 +161,22 @@
     var host = {{.Host}};
     var data = {{.Result.Jobs}};
     var ws = new Ws("ws://{{.Host}}/end_point");
-	ws.OnConnect(function(){
-		ws.Emit("regis", "/ec");
-		ws.On("refresh", function(){
-            console.log("refresh");
-			window.location.reload();
-		})
-	})
 
     $(document).ready(function(){
+        ws.OnConnect(function(){
+            ws.Emit("regis", "/ec");
+		    console.log("send");
+	    });
+
+	    ws.On("refresh", function(){
+                console.log("refresh");
+			    window.location.reload();
+		    })
+
+        ws.OnDisconnect(function(){
+            console.log("lost connection");
+        });
+
         for(var i = 0 ; i < data.length; i++){
         	var item = data[i];
 	        if(item.IsDone == 0){
