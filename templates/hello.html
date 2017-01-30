@@ -51,7 +51,7 @@
             </div>
 
             <ul class="nav">
-                <li>
+                <li class="active">
                     <a href="/hello">
                         <i class="pe-7s-help1"></i>
                         <p>Hello - Need Help?</p>
@@ -69,7 +69,7 @@
                         <p>Job - Result</p>
                     </a>
                 </li>
-                <li class="active">
+                <li>
                     <a href="/testset">
                         <i class="pe-7s-note2"></i>
                         <p>Test Set</p>
@@ -92,60 +92,48 @@
     </div>
 
     <div class="main-panel">
-        <nav class="navbar navbar-default navbar-fixed">
-            <div class="container-fluid">
-                <div class="navbar-header">
-                    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navigation-example-2">
-                        <span class="sr-only">Toggle navigation</span>
-                        <span class="icon-bar"></span>
-                        <span class="icon-bar"></span>
-                        <span class="icon-bar"></span>
-                    </button>
-                    <a class="navbar-brand" href="#">Testset - New</a>
-                </div>
-            </div>
-        </nav>
-
-
         <div class="content">
-            <div class="container-fluid">
-                <form action="/testset" method="post">
-                    <div class="col-sm-12">
-                        <div class="pull-right ">
-                            <button class="btn btn-success" type="submit">Create Testset</button>
-                        </div>
-                    </div>
-                    <div class="col-sm-6">
-                        <div class="form-group">
-                            <label for="name">Name</label>
-                            <input class="form-control" type="text" id="name" name="name"/>
-                        </div>
-                    </div>
-                    <div class="col-sm-6">
-                        <div class="form-group">
-                            <label for="duration">Testing duration per testcase</label>
-                            <input class="form-control" type="text" id="duration" name="duration"/>
-                        </div>
-                    </div>
-                    <table class="table">
-                        <thead>
-                        <tr>
-                            <td>
-                                <label>Connection</label>
-                            </td>
-                            <td></td>
-                            <td>
-                                <div class="pull-right">
-                                    <button id="add" type="button" class="btn btn-success"><i class="pe-7s-plus"></i> Add New Case</button>
-                                </div>
-                            </td>
-                        </tr>
-                        </thead>
-                        <tbody id="tbody-case">
+            <div class="container-fluid" id="content">
+# wrk-load-testing-module
+The wg/wrk extension tool provides continuous load testing in range of connection. Easy to find out the bottleneck and increase your web application performance. Using together with Jenkins are available via http call(curl to API). Understand your web application load characteristic in each number of connection.
 
-                        </tbody>
-                    </table>
-                </form>
+* Latency
+* Data-Transfer/Second
+* Socket Error
+* Non-2xx Response
+
+### Install Instruction
+* Install Golang
+* Install wrk
+* Install wrk-load-testing-module using go-get command
+
+```
+$ go get github.com/tspn/wrk-load-testing-module
+```
+
+### Mode
+* Test by case
+* Realtime Test
+* Estimate Connection
+
+### Require
+* [wg/wrk](https://github.com/wg/wrk)
+* [golang](https://golang.org/)
+
+### Available
+* Linux
+
+### Before do anything
+Linux are limited only 1024 opening files at the same time. wrk needs to operate many files in order to create HTTP connections(socket). it’s OK, if we run the test less than 1024 connections. But 1024 is not enough for the large scale web. You can check how many files can open at the same time using command
+```
+$ sysctl -w fs.file-max=1000000
+```
+And
+```
+$ ulimit -n 655350
+```
+
+
             </div>
         </div>
 
@@ -165,36 +153,18 @@
 
 <!--  Checkbox, Radio & Switch Plugins -->
 <script src="/assets/js/bootstrap-checkbox-radio-switch.js"></script>
+
+<!--  Charts Plugin -->
+<script src="/assets/js/chartist.min.js"></script>
+
 <!-- Light Bootstrap Table Core javascript and methods for Demo purpose -->
 <script src="/assets/js/light-bootstrap-dashboard.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/markdown.js/0.5.0/markdown.min.js"></script>
+
 <script>
-    var iterationCounter = 0;
-
-    function remove(id){
-            console.log(`#tr_${id}`);
-            $(`#tr_${id}`).remove();
-    }
-
-    $(document).ready(function(){
-        $("#add").click(function(){
-            iterationCounter++;
-            $("#tbody-case").append(`
-                <tr id="tr_${iterationCounter}">
-                    <td>
-                        <label for="button_${iterationCounter}">Case</label>
-
-                    </td>
-                    <td>
-                        <input id="input_${iterationCounter}" type="text" class="form-control" name="connection"/>
-                    </td>
-                    <td>
-                        <div class="pull-right">
-                        <button id="button_${iterationCounter}" type="button" class="btn btn-danger" onclick="remove('${iterationCounter}')"><i class="pe-7s-close"></i> Delete</button>
-                        </div>
-                    </td>
-                </tr>
-            `);
-        })
-    })
+    var v = markdown.toHTML($("#content").html().trim());
+    console.log(v);
+    $('#content').html(v);
 </script>
+
 </html>

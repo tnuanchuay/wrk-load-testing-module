@@ -55,7 +55,11 @@ func main() {
 	iris.StaticWeb("/assets", "./static/assets")
 
 	iris.Get("/", func(ctx *iris.Context){
-		ctx.Redirect("/run")
+		ctx.Redirect("/hello")
+	})
+
+	iris.Get("/hello", func(ctx *iris.Context){
+		ctx.Render("hello.html", nil)
 	})
 
 	iris.Get("/run", func(ctx *iris.Context){
@@ -243,7 +247,7 @@ func main() {
 		db.Create(&job)
 		jobProgress[job.ID] = 1;
 		wrkChannel <- &job
-		ctx.Redirect("/")
+		ctx.Redirect("/result")
 	})
 
 	iris.Get("/realtime/reset", func(ctx *iris.Context){
@@ -305,7 +309,7 @@ func main() {
 						return
 					}
 
-					socketErrorNum = result.SocketErrors_Connection 
+					socketErrorNum = result.SocketErrors_Connection
 
 					successRequestRatio := float64(result.Non2xx3xx) / float64(result.Requests) * 100.0
 

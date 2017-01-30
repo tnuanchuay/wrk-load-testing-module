@@ -10,3 +10,4 @@ lua
 *.swp
 wrk-load-testing-module
 *.swo
+node_modules
