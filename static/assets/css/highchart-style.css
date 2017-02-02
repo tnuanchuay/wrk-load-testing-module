@@ -1,0 +1,28 @@
+#rps,
+#tps,
+
+#reqs,
+#requests,
+
+#ttf,
+#totalTransfer,
+
+#avglat,
+#latency,
+
+#avgonet,
+#rpsOneThread,
+
+#socerr,
+#socketerr,
+#errratio,
+
+#non2xx3xx,
+
+#success
+{
+	min-width: 310px !important;  
+	height: 200px !important; 
+	margin: 0 auto !important; 
+	padding: 10px 0px 10px 0px !important;
+}
