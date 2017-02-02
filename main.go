@@ -18,10 +18,15 @@ import (
 	"github.com/tspn/wrk-load-testing-module/wrk"
 )
 
+const(
+	EC_WAIT_TIME		=	70
+)
+
 func main() {
 	var realtimeWrkEngine realtime.WrkEngine
 	var sockets		ws.GroupSocket
-	var realtimeSocket	ws.GroupSocket
+	var realtimeSockets	 ws.GroupSocket
+	var ecSockets		ws.GroupSocket
 	realtimeInUsed := false
 	leakyBucket:= make(chan int)
 
@@ -50,7 +55,11 @@ func main() {
 	iris.StaticWeb("/assets", "./static/assets")
 
 	iris.Get("/", func(ctx *iris.Context){
-		ctx.Redirect("/run")
+		ctx.Redirect("/hello")
+	})
+
+	iris.Get("/hello", func(ctx *iris.Context){
+		ctx.Render("hello.html", nil)
 	})
 
 	iris.Get("/run", func(ctx *iris.Context){
@@ -238,7 +247,7 @@ func main() {
 		db.Create(&job)
 		jobProgress[job.ID] = 1;
 		wrkChannel <- &job
-		ctx.Redirect("/")
+		ctx.Redirect("/result")
 	})
 
 	iris.Get("/realtime/reset", func(ctx *iris.Context){
@@ -247,7 +256,7 @@ func main() {
 		go func(){
 			leakyBucket <- 1
 		}()
-		realtimeSocket.BroadCast("exit", map[string]interface{}{
+		realtimeSockets.BroadCast("exit", map[string]interface{}{
 			"exit":"exit",
 		})
 		ctx.Redirect("/realtime")
@@ -264,45 +273,86 @@ func main() {
 	})
 
 	iris.Get("/ec", func(ctx *iris.Context){
-		ctx.Render("ec.html", nil)
+		vc := view_controller.ECDashPage{}.GetPageViewControl(db)
+		ctx.Render("ec.html", map[string]interface{}{
+			"Result" : vc,
+			"Host" : ctx.Host(),
+		})
 	})
 
 	iris.Post("/ec/test", func(ctx *iris.Context){
 		url := string(ctx.FormValue("url"))
-		//stepString := string(ctx.FormValue("step"))
-		//step, _ := strconv.Atoi(stepString)
-		//cpuNum := runtime.NumCPU()
+		ecResult := model.ECJob{}
+		ecResult.Url = url
+		ecResult.IsDone = 0
+		db.Save(&ecResult)
+		ctx.Redirect("/ec", 302)
 		wg := sync.WaitGroup{}
 		go func() {
+			<- leakyBucket
 			minCon := 0
-			maxCon := 100000
-			getAnswer := false
+			maxCon := 50000
+			socketErrorNum := 0
 			result := model.WrkResult{}
+			getAnswer := false
 			for !getAnswer {
 				wg.Add(1)
 				go func() {
+					defer wg.Done()
 					currentTarget := (minCon +  maxCon) / 2
 					result = wrk.Run(url,
 						strconv.Itoa(runtime.NumCPU()),
 						strconv.Itoa(currentTarget), "10s")
+					time.Sleep(EC_WAIT_TIME * time.Second)
+					if result.IsError {
+						fmt.Println("error", url, currentTarget)
+						return
+					}
 
-					errPercent := float64(result.Non2xx3xx) / float64(result.Requests) * 100.0
+					socketErrorNum = result.SocketErrors_Connection
 
-					fmt.Println(minCon, maxCon, errPercent)
+					successRequestRatio := float64(result.Non2xx3xx) / float64(result.Requests) * 100.0
 
-					if (5 < errPercent) && (errPercent < 10 ){
+					fmt.Println("result", minCon, maxCon, successRequestRatio)
+
+					if socketErrorNum != 0{
+						maxCon = currentTarget - int(float64(socketErrorNum) * 0.50)
+						if minCon > maxCon{
+							temp := minCon
+							minCon = maxCon
+							maxCon = temp
+						}
+						return
+					}
+
+					if ((1 < successRequestRatio) && (successRequestRatio < 5 )) || (currentTarget == maxCon){
 						getAnswer = true
-					}else if errPercent < 5{
+					}else if successRequestRatio < 1{
 						minCon = currentTarget
-					}else if 10 < errPercent{
+					}else if 5 < successRequestRatio {
 						maxCon = currentTarget
 					}
-					wg.Done()
+
+					if float64(minCon) / float64(maxCon) > 0.99{
+						getAnswer = true
+					}
 				}()
 				wg.Wait()
 			}
 			capacity := (minCon + maxCon) / 2
 			fmt.Println("capacity of ", url, "=", capacity, "and can work at delivery rate", result.RequestPerSec)
+			ecResult.RequestPerSec = result.RequestPerSec
+			ecResult.LowNumber = minCon
+			ecResult.HighNumber = maxCon
+			ecResult.Estimate = capacity
+			ecResult.IsDone = 1
+			ecResult.TimeoutError = result.SocketErrors_Timeout
+			ecResult.WriteError = result.SocketErrors_Write
+			ecResult.ReadError = result.SocketErrors_Read
+			db.Save(&ecResult)
+			fmt.Println(len(ecSockets.Sockets))
+			ecSockets.BroadCast("refresh", map[string]interface{}{"command" : "need to refresh"})
+			leakyBucket <- 1
 		}()
 	})
 
@@ -310,6 +360,7 @@ func main() {
 	iris.Config.Websocket.WriteBufferSize = 10000
 
 	iris.Websocket.OnConnection(func (c iris.WebsocketConnection){
+
 		c.On("get-progress", func(msg string){
 			i, _ := strconv.Atoi(msg)
 			progress := jobProgress[uint(i)]
@@ -336,10 +387,14 @@ func main() {
 		c.On("regis", func(msg string){
 			switch msg {
 			case "/realtime":
-				realtimeSocket.Sockets = append(realtimeSocket.Sockets, &c)
+				realtimeSockets.Sockets = append(realtimeSockets.Sockets, &c)
 			case "/result":
 				sockets.Sockets = append(sockets.Sockets, &c)
+			case "/ec":
+				ecSockets.Sockets = append(ecSockets.Sockets, &c)
+				fmt.Println(len(ecSockets.Sockets))
 			}
+			fmt.Println(msg)
 		})
 
 		c.On("realtime", func(msg string){
@@ -353,7 +408,7 @@ func main() {
 				realtimeWrkEngine.SetUrl(request.Url)
 				realtimeWrkEngine.Start(c)
 				realtimeInUsed = true
-				realtimeSocket.BroadcastAllExcept("exit", map[string]interface{}{
+				realtimeSockets.BroadcastAllExcept("exit", map[string]interface{}{
 					"exit":"exit",
 				}, c)
 			}else if (realtimeWrkEngine.GetState() == request.EngineStatus) && (request.EngineStatus == true){
@@ -452,4 +507,5 @@ func initializeModel(db *gorm.DB){
 	db.AutoMigrate(&model.Testcase{})
 	db.AutoMigrate(&model.Testset{})
 	db.AutoMigrate(&model.WrkResult{})
+	db.AutoMigrate(&model.ECJob{})
 }

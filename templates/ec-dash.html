@@ -57,13 +57,13 @@
                         <p>Hello - Need Help?</p>
                     </a>
                 </li>
-                <li>
+                <li class="active">
                     <a href="/run">
                         <i class="pe-7s-play"></i>
                         <p>Run - Testing</p>
                     </a>
                 </li>
-                <li class="active">
+                <li>
                     <a href="/result">
                         <i class="pe-7s-news-paper"></i>
                         <p>Job - Result</p>
@@ -101,31 +101,15 @@
                         <span class="icon-bar"></span>
                         <span class="icon-bar"></span>
                     </button>
-                    <a class="navbar-brand" href="#"><i class="pe-7s-news-paper"></i> Job - Result</a>
+                    <a class="navbar-brand" href="#">Estimate Connection</a>
                 </div>
             </div>
         </nav>
 
 
         <div class="content">
-            <div class="container-fluid" id="main">
-                <div class="row">
-                    <table class="table table-hover">
-                        <thead>
-                        <tr>
-                            <td>#</td>
-                            <td>Name</td>
-                            <td>Url</td>
-                            <td>Testset</td>
-                            <td>Status</td>
-                            <td></td>
-                        </tr>
-                        </thead>
-                        <tbody id="job-tbody">
+            <div class="container-fluid">
 
-                        </tbody>
-                    </table>
-                </div>
             </div>
         </div>
 
@@ -147,98 +131,32 @@
 <script src="/assets/js/bootstrap-checkbox-radio-switch.js"></script>
 
 <!--  Charts Plugin -->
+<script src="/assets/js/chartist.min.js"></script>
 
 <!--  Notifications Plugin    -->
 <script src="/assets/js/bootstrap-notify.js"></script>
-<script src="/iris-ws.js"></script>
+
+<!--  Google Maps Plugin    -->
+<script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?sensor=false"></script>
 
 <!-- Light Bootstrap Table Core javascript and methods for Demo purpose -->
 <script src="/assets/js/light-bootstrap-dashboard.js"></script>
-
 <script>
-    var data = JSON.parse(`{{.Result.Job}}`);
-    var testset = JSON.parse(`{{.Result.Testset}}`);
-    var ws = new Ws("ws://{{.Host}}/end_point");
-
-    ws.OnConnect(function(){
-        ws.Emit("regis", "/result")
-    })
-
-    function findTestSetById(id){
-        for(var i = 0 ; i < testset.length ; i++){
-            if(testset[i].ID == id)
-                return testset[i].Name;
-        }
-
-        return undefined;
+    var data = {{.Jobs}};
+    for(var i = 0 ; i < data.length; i++){
+        var item = data[i];
+        $("#data").append(`
+            <tr>
+            <td>${i+1}</td>
+            <td>${item.Url}</td>
+            <td>${item.LowNumber}</td>
+            <td>${item.HighNumber}</td>
+            <td>${item.Estimate}</td>
+            <td>${item.ReadError}</td>
+            <td>${item.WriteError}</td>
+            <td>${item.TimeoutError}</td>
+            </tr>
+        `);
     }
-
-    function result(link){
-        window.location.href = "/result/" + link;
-    }
-
-    $(document).ready(function(){
-
-        if(data.length == 0){
-            $("#main").empty();
-            $("#main").append(`
-                <p class="text-center">There is not result yet until you have testing it one</p>
-            `);
-
-            return;
-        }
-
-        ws.On("h", function (msg) {
-            console.log(msg);
-        });
-
-        for(var i = 0 ; i < data.length ; i++){
-            const d = data[i];
-
-            $("#job-tbody").append(`
-                <tr onclick="result('${d.ID}')">
-                    <td>${i+1}</td>
-                    <td>${d.Name}</td>
-                    <td>${d.RequestUrl}</td>
-                    <td>${findTestSetById(d.Testset)}</td>
-                    <td id="tr_${d.ID}"></td>
-                    <td>
-                        <a href="/rerun/${d.ID}"><button class="btn btn-primary">Rerun</button></a>
-                        <a href="/result/${d.ID}/del"><button class="btn btn-danger">Delete</button></a>
-                    </td>
-                </tr>
-            `)
-
-            ws.On("ROOM" + d.ID, function(msg){
-                console.log(msg);
-                var value = JSON.parse(msg);
-                var str = "";
-                if(value.progress == "100.00"){
-                    if(d.TestError == 0)
-                        str = `<span class="label label-success">finished</span>`;
-                }else{
-                    str = `<span class="label label-primary">${value.progress} %</span>`;
-                }
-
-                if(d.TestError != 0){
-                    str += `<span class="label label-danger"> ${d.TestError} Error</span>`;
-                }
-
-                if(d.ExitInterrupt && value.progress == "100.0"){
-                    str = `<span class="label label-danger">Exit Interrupt</span>`;
-                }
-
-                $(`#tr_${d.ID}`).html(str);
-            });
-
-
-            setTimeout(function(){
-                ws.Emit("get-progress", ""+d.ID);
-                console.log("asd")
-            }, 300);
-
-        }
-    });
 </script>
-
 </html>

@@ -16,6 +16,7 @@ func Run(url, t, c, d string) model.WrkResult{
 	//fmt.Println(command.Args)
 	cmdReader, _ := command.StdoutPipe()
 	scanner := bufio.NewScanner(cmdReader)
+	defer cmdReader.Close()
 	var out string
 	go func() {
 		for scanner.Scan() {
@@ -27,7 +28,8 @@ func Run(url, t, c, d string) model.WrkResult{
 	}()
 	command.Start()
 	command.Wait()
-	//fmt.Println(out)
+
+	fmt.Println(out)
 
 	wrk := model.WrkResult{}
 	wrk.SetData(url, out)

@@ -23,7 +23,7 @@
 
     <!--  CSS for Demo Purpose, don't include it in your project     -->
     <link href="/assets/css/demo.css" rel="stylesheet" />
-
+    <link href="/assets/css/spinner.css" rel="stylesheet" />
 
     <!--     Fonts and icons     -->
     <link href="http://maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
@@ -52,6 +52,12 @@
 
             <ul class="nav">
                 <li>
+                    <a href="/hello">
+                        <i class="pe-7s-help1"></i>
+                        <p>Hello - Need Help?</p>
+                    </a>
+                </li>
+                <li>
                     <a href="/run">
                         <i class="pe-7s-play"></i>
                         <p>Run - Testing</p>
@@ -77,7 +83,7 @@
                 </li>
                 <li class="active">
                     <a href="/ec">
-                        <i class="pe-7s-stopwatch"></i>
+                        <i class="pe-7s-gleam"></i>
                         <p>Estimate Capacity</p>
                     </a>
                 </li>
@@ -108,15 +114,30 @@
                         <label for="url">URL</label>
                         <input type="url" id="url" name="url" class="form-control">
                     </div>
-                    <div class="form-group">
-                        <label for="step">Step</label>
-                        <input type="number" id="step" name="step" class="form-control">
-                    </div>
                     <div class="form-group pull-right">
                         <button type="submit" class="btn btn-success">Run</button>
                     </div>
                 </form>
             </div>
+
+            <table class="table">
+                <thead>
+                <tr>
+                    <td>#</td>
+                    <td>URL</td>
+                    <td>Request/Sec</td>
+                    <td>Minimal</td>
+                    <td>Max</td>
+                    <td>Estimate Value</td>
+                    <td>Read Error</td>
+                    <td>Write Error</td>
+                    <td>Timeout Value</td>
+                </tr>
+                </thead>
+                <tbody id="data">
+
+                </tbody>
+            </table>
         </div>
 
 
@@ -138,14 +159,65 @@
 
 <!--  Charts Plugin -->
 <script src="/assets/js/chartist.min.js"></script>
-
-<!--  Notifications Plugin    -->
-<script src="/assets/js/bootstrap-notify.js"></script>
-
-<!--  Google Maps Plugin    -->
-<script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?sensor=false"></script>
+<script src="/iris-ws.js"></script>
 
 <!-- Light Bootstrap Table Core javascript and methods for Demo purpose -->
 <script src="/assets/js/light-bootstrap-dashboard.js"></script>
+<script>
+    var host = {{.Host}};
+    var data = {{.Result.Jobs}};
+    var ws = new Ws("ws://{{.Host}}/end_point");
 
+    $(document).ready(function(){
+        ws.OnConnect(function(){
+            ws.Emit("regis", "/ec");
+		    console.log("send");
+	    });
+
+	    ws.On("refresh", function(){
+                console.log("refresh");
+			    window.location.reload();
+		    })
+
+        ws.OnDisconnect(function(){
+            console.log("lost connection");
+        });
+
+        for(var i = 0 ; i < data.length; i++){
+        	var item = data[i];
+	        if(item.IsDone == 0){
+       			$("#data").append(`
+                		<tr>
+                		<td>${i+1}</td>
+                		<td>${item.Url}</td>
+                		<td><span class="spinner"></span></td>
+		                <td><span class="spinner"></span></td>
+		                <td><span class="spinner"></span></td>
+		                <td><span class="spinner"></span></td>
+		                <td><span class="spinner"></span></td>
+		                <td><span class="spinner"></span></td>
+		                <td><span class="spinner"></span></td>
+		                </tr>
+	                `);
+
+        	}else{
+            		$("#data").append(`
+		                <tr>
+		                <td>${i+1}</td>
+		                <td>${item.Url}</td>
+		                <td>${item.RequestPerSec}</td>
+		                <td>${item.LowNumber}</td>
+		                <td>${item.HighNumber}</td>
+		                <td>${item.Estimate}</td>
+		                <td>${item.ReadError}</td>
+		                <td>${item.WriteError}</td>
+		                <td>${item.TimeoutError}</td>
+		                </tr>
+		            `);
+	        }
+    	}
+   });
+
+    
+</script>
 </html>
