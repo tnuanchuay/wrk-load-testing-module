@@ -105,6 +105,7 @@
 
                 </div>
                 <div>
+                    <a href="/result/{{.Result.Job.ID}}/del"><button id="del" class="btn btn-danger">Delete</button> </a>
                     <a href="/result/{{.Result.Job.ID}}/diff"><button id="compare" class="btn btn-primary">Compare</button></a>
                     <a><button id="report" class="btn btn-primary">Report</button></a>
                 </div>
@@ -173,6 +174,7 @@
     })
 
     $("#compare").hide();
+    $("#del").hide();
     $("#report").hide();
 
     ws.On('ROOM' + job.ID, function(rx){
@@ -247,6 +249,7 @@
 
         if(wrk.length == testset.Testcase.length){
             $("#compare").show();
+            $("#del").show();
             $("#report").show();
 
             $("#graph").append(`<div id="rps"></div>`);

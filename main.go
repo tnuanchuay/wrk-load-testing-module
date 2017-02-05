@@ -19,7 +19,7 @@ import (
 )
 
 const(
-	EC_WAIT_TIME		=	70
+	AFTERBURN_WAIT_TIME =	70
 )
 
 func main() {
@@ -303,7 +303,7 @@ func main() {
 					result = wrk.Run(url,
 						strconv.Itoa(runtime.NumCPU()),
 						strconv.Itoa(currentTarget), "10s")
-					time.Sleep(EC_WAIT_TIME * time.Second)
+					time.Sleep(AFTERBURN_WAIT_TIME * time.Second)
 					if result.IsError {
 						fmt.Println("error", url, currentTarget)
 						return
@@ -445,7 +445,7 @@ func main() {
 							"ok":ok,
 						})
 						db.Save(&job)
-						time.Sleep(10 * time.Second)
+						time.Sleep(AFTERBURN_WAIT_TIME * time.Second)
 					}
 					job.Complete = true
 					job.ExitInterrupt = false
