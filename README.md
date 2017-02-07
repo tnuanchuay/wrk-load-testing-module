@@ -1,4 +1,7 @@
 ﻿# wrk-load-testing-module
+ 
+[![Build Status](https://travis-ci.org/tspn/wrk-load-testing-module.svg?branch=master)](https://travis-ci.org/tspn/wrk-load-testing-module)
+ 
 The wg/wrk extension tool provides continuous load testing in range of connection. Easy to find out the bottleneck and increase your web application performance. Using together with Jenkins are available via http call(curl to API). Understand your web application load characteristic in each number of connection.
 
 * Latency
