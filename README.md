@@ -6,6 +6,15 @@ The wg/wrk extension tool provides continuous load testing in range of connectio
 * Socket Error
 * Non-2xx Response
 
+### Require
+* > 512 MB of RAM
+* [wg/wrk](https://github.com/wg/wrk)
+* [golang version > 1.5](https://golang.org/)
+
+### Available
+* Linux
+* OSX
+
 ### Install Instruction
 * Install Golang
 * Install wrk
@@ -14,7 +23,7 @@ git clone https://github.com/wg/wrk.git
 cd wrk
 make
 ```
-lazy ?
+can't wait?
 ```
 sudo apt-get install wrk
 ```
@@ -28,13 +37,5 @@ go get github.com/tspn/wrk-load-testing-module
 * Realtime Test
 * Soaking Test
 * Estimate Function Capacity
-
-### Require
-* [wg/wrk](https://github.com/wg/wrk)
-* [golang](https://golang.org/)
-
-### Available
-* Linux
-* OSX
 
 
