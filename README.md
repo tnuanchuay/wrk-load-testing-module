@@ -11,6 +11,13 @@ The wg/wrk extension tool provides continuous load testing in range of connectio
 * [wg/wrk](https://github.com/wg/wrk)
 * [golang version > 1.5](https://golang.org/)
 
+### Toubleshoot
+* kataras/go-websocket work incorrectly in new version.
+```
+cd $GOPATH/src/github.com/kataras/go-websocket
+git checkout c23e0b800ee290a488a057f74375cbcb9d2fe8e4
+```
+
 ### Available
 * Linux
 
