@@ -1,0 +1,9 @@
+language: go
+go:
+  - 1.6
+  - tip
+
+install:
+  - go get -u -v github.com/tspn/wrk-load-testing-module
+  
+script: go test -v github.com/tspn/wrk-load-testing-module...
