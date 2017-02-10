@@ -202,7 +202,7 @@
 		                </tr>
 	                `);
 
-        	}else{
+        	}else if (item.IsDone == 1){
             		$("#data").append(`
 		                <tr>
 		                <td>${i+1}</td>
@@ -216,7 +216,15 @@
 		                <td>${item.TimeoutError}</td>
 		                </tr>
 		            `);
-	        }
+	        }else{
+                $("#data").append(`
+		                <tr>
+		                <td>${i+1}</td>
+		                <td>${item.Url}</td>
+		                <td colspan="7"><span class="label label-danger">Error</span></td>
+		                </tr>
+		            `);
+            }
     	}
    });
 
