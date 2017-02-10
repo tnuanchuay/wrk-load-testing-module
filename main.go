@@ -46,6 +46,7 @@ func main() {
 	initializeTestset(db)
 
 	db.Find(&model.Job{}, "complete = ?", false).Update("exit_interrupt", true)
+	db.Find(&model.ECJob{}, "is_done = ?", 0).Update("is_done", -1)
 
 	var jobProgress map[uint]float64 = make(map[uint]float64)
 	var wrkChannel = make(chan *model.Job, 100)
