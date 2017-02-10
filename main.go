@@ -1,39 +1,39 @@
 package main
 
 import (
+	"fmt"
+	"os"
+	"runtime"
+	"strconv"
+	"sync"
+	"time"
+
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/sqlite"
 	"github.com/kataras/iris"
 	"github.com/tspn/wrk-load-testing-module/model"
-	"github.com/tspn/wrk-load-testing-module/view-controller"
-	"fmt"
-	"sync"
-	"time"
-	"strconv"
-	"runtime"
-	"github.com/tspn/wrk-load-testing-module/unit/si"
-	"os"
 	"github.com/tspn/wrk-load-testing-module/realtime"
-	"github.com/tspn/wrk-load-testing-module/ws"
+	"github.com/tspn/wrk-load-testing-module/unit/si"
+	"github.com/tspn/wrk-load-testing-module/view-controller"
 	"github.com/tspn/wrk-load-testing-module/wrk"
+	"github.com/tspn/wrk-load-testing-module/ws"
 )
 
-const(
-	AFTERBURN_WAIT_TIME =	70
+const (
+	AFTERBURN_WAIT_TIME = 70
 )
 
 func main() {
 	var realtimeWrkEngine realtime.WrkEngine
-	var sockets		ws.GroupSocket
-	var realtimeSockets	 ws.GroupSocket
-	var ecSockets		ws.GroupSocket
+	var sockets ws.GroupSocket
+	var realtimeSockets ws.GroupSocket
+	var ecSockets ws.GroupSocket
 	realtimeInUsed := false
-	leakyBucket:= make(chan int)
+	leakyBucket := make(chan int)
 
-	go func(){
+	go func() {
 		leakyBucket <- 1
 	}()
-
 
 	db, err := gorm.Open("sqlite3", "database.db")
 	if err != nil {
@@ -54,49 +54,49 @@ func main() {
 
 	iris.StaticWeb("/assets", "./static/assets")
 
-	iris.Get("/", func(ctx *iris.Context){
+	iris.Get("/", func(ctx *iris.Context) {
 		ctx.Redirect("/hello")
 	})
 
-	iris.Get("/hello", func(ctx *iris.Context){
+	iris.Get("/hello", func(ctx *iris.Context) {
 		ctx.Render("hello.html", nil)
 	})
 
-	iris.Get("/run", func(ctx *iris.Context){
+	iris.Get("/run", func(ctx *iris.Context) {
 		home := view_controller.Home{}.GetViewControl(db)
 		ctx.Render("home.html", home)
 	})
 
-	iris.Get("/result", func(ctx *iris.Context){
+	iris.Get("/result", func(ctx *iris.Context) {
 		resultViewControl := view_controller.Result{}.GetViewControl(db)
-		ctx.Render("job.html", struct{
-			Result		*view_controller.Result
-			Host		string
-		}{Result : resultViewControl, Host : ctx.Host()})
+		ctx.Render("job.html", struct {
+			Result *view_controller.Result
+			Host   string
+		}{Result: resultViewControl, Host: ctx.Host()})
 	})
 
-	iris.Get("/result/:id", func(ctx *iris.Context){
+	iris.Get("/result/:id", func(ctx *iris.Context) {
 		stringId := ctx.Param("id")
 		intId, _ := strconv.Atoi(stringId)
 		resultJobViewControl := view_controller.JobResult{}.GetJobViewControl(db, uint(intId))
-		if resultJobViewControl == nil{
+		if resultJobViewControl == nil {
 			ctx.Redirect("/result")
-		}else{
-			ctx.Render("result.html", struct{
-				Result		*view_controller.JobResult
-				Host		string
-			}{Result : resultJobViewControl, Host : ctx.Host()})
+		} else {
+			ctx.Render("result.html", struct {
+				Result *view_controller.JobResult
+				Host   string
+			}{Result: resultJobViewControl, Host: ctx.Host()})
 		}
 	})
 
-	iris.Get("/result/:id/diff", func(ctx *iris.Context){
+	iris.Get("/result/:id/diff", func(ctx *iris.Context) {
 		stringId := ctx.Param("id")
 		intId, _ := strconv.Atoi(stringId)
 		jobDiffSelectViewControl := view_controller.DiffSelect{}.GetViewControl(db, uint(intId))
 		ctx.Render("diff-select.html", jobDiffSelectViewControl)
 	})
 
-	iris.Get("/result/:id/diff/:id2", func(ctx *iris.Context){
+	iris.Get("/result/:id/diff/:id2", func(ctx *iris.Context) {
 		stringId1 := ctx.Param("id")
 		stringId2 := ctx.Param("id2")
 		intId1, _ := strconv.Atoi(stringId1)
@@ -105,40 +105,40 @@ func main() {
 		ctx.Render("diff.html", jobDiffViewControl)
 	})
 
-	iris.Get("/result/:id/del", func(ctx *iris.Context){
+	iris.Get("/result/:id/del", func(ctx *iris.Context) {
 		id := ctx.Param("id")
 		db.Delete(&model.Job{}, "id = ?", id)
 		ctx.Redirect("/result")
 	})
 
-	iris.Get("/testset", func(ctx *iris.Context){
+	iris.Get("/testset", func(ctx *iris.Context) {
 		testsetPage := view_controller.TestsetPage{}.GetPageViewControl(db)
 		ctx.Render("testset.html", testsetPage)
 	})
 
-	iris.Get("/testset/:id", func(ctx *iris.Context){
+	iris.Get("/testset/:id", func(ctx *iris.Context) {
 		stringId := ctx.Param("id")
 
-		if stringId == "new"{
+		if stringId == "new" {
 			ctx.Render("testset-new.html", nil)
-			return;
+			return
 		}
 
 		id, err := strconv.Atoi(stringId)
-		if err != nil{
+		if err != nil {
 			ctx.Redirect("/testset")
-			return;
+			return
 		}
 
 		var testset model.Testset
 		db.Find(&testset, "id = ?", id).Related(&testset.Testcase)
 
-		var vc = view_controller.EditTestsetPage{Testset:testset}
+		var vc = view_controller.EditTestsetPage{Testset: testset}
 
 		ctx.Render("testset-edit.html", vc)
 	})
 
-	iris.Post("/testset", func(ctx *iris.Context){
+	iris.Post("/testset", func(ctx *iris.Context) {
 		name := string(ctx.FormValue("name"))
 		cpu := runtime.NumCPU()
 		duration := string(ctx.FormValue("duration"))
@@ -147,14 +147,14 @@ func main() {
 		var testset model.Testset
 		testset.Name = name
 
-		for _, connection := range connections{
+		for _, connection := range connections {
 			var testcase model.Testcase
 			testcase.Duration = duration
 			testcase.Connection = connection
 			floatConnection, _ := si.SIToFloat(connection)
-			if int(floatConnection) <= cpu{
+			if int(floatConnection) <= cpu {
 				testcase.Thread = strconv.Itoa(int(floatConnection))
-			}else{
+			} else {
 				testcase.Thread = strconv.Itoa(cpu)
 			}
 
@@ -165,14 +165,14 @@ func main() {
 		ctx.Redirect("/testset")
 	})
 
-	iris.Get("/testset/:id/del", func(ctx *iris.Context){
+	iris.Get("/testset/:id/del", func(ctx *iris.Context) {
 		id := string(ctx.Param("id"))
 		intId, _ := strconv.Atoi(id)
 		db.Delete(&model.Testset{}, "id = ?", uint(intId)).Related(&model.Testcase{})
 		ctx.Redirect("/testset")
 	})
 
-	iris.Post("/testset/:id/edit", func(ctx *iris.Context){
+	iris.Post("/testset/:id/edit", func(ctx *iris.Context) {
 		name := string(ctx.FormValue("name"))
 		cpu := runtime.NumCPU()
 		duration := string(ctx.FormValue("duration"))
@@ -187,14 +187,14 @@ func main() {
 
 		db.Delete(&model.Testcase{}, "testset_id = ?", uIntId)
 
-		for _, connection := range connections{
+		for _, connection := range connections {
 			var testcase model.Testcase
 			testcase.Duration = duration
 			testcase.Connection = connection
 			floatConnection, _ := si.SIToFloat(connection)
-			if int(floatConnection) <= cpu{
+			if int(floatConnection) <= cpu {
 				testcase.Thread = strconv.Itoa(int(floatConnection))
-			}else{
+			} else {
 				testcase.Thread = strconv.Itoa(cpu)
 			}
 
@@ -205,7 +205,7 @@ func main() {
 		ctx.Redirect("/testset")
 	})
 
-	iris.Get("/rerun/:id", func(ctx *iris.Context){
+	iris.Get("/rerun/:id", func(ctx *iris.Context) {
 		sId := string(ctx.Param("id"))
 		var job model.Job
 		db.Find(&job, "id = ?", sId)
@@ -216,13 +216,13 @@ func main() {
 
 		db.Create(&job)
 
-		jobProgress[job.ID] = 1;
+		jobProgress[job.ID] = 1
 
 		wrkChannel <- &job
 		ctx.Redirect("/result")
 	})
 
-	iris.Post("/wrk", func(ctx *iris.Context){
+	iris.Post("/wrk", func(ctx *iris.Context) {
 		name := string(ctx.FormValue("name"))
 		url := string(ctx.FormValue("url"))
 		method := string(ctx.FormValue("method"))
@@ -245,42 +245,42 @@ func main() {
 		job.Complete = false
 
 		db.Create(&job)
-		jobProgress[job.ID] = 1;
+		jobProgress[job.ID] = 1
 		wrkChannel <- &job
 		ctx.Redirect("/result")
 	})
 
-	iris.Get("/realtime/reset", func(ctx *iris.Context){
+	iris.Get("/realtime/reset", func(ctx *iris.Context) {
 		realtimeWrkEngine.Stop()
 		realtimeInUsed = false
-		go func(){
+		go func() {
 			leakyBucket <- 1
 		}()
 		realtimeSockets.BroadCast("exit", map[string]interface{}{
-			"exit":"exit",
+			"exit": "exit",
 		})
 		ctx.Redirect("/realtime")
 	})
 
-	iris.Get("/realtime", func(ctx *iris.Context){
+	iris.Get("/realtime", func(ctx *iris.Context) {
 		if !realtimeInUsed {
-			ctx.Render("realtime.html", map[string]interface{}{"Host" : ctx.Host()})
-		}else{
+			ctx.Render("realtime.html", map[string]interface{}{"Host": ctx.Host()})
+		} else {
 			ctx.Render("realtimebusy.html", nil)
 		}
 
 		fmt.Println("realtimeInUsed =", realtimeInUsed)
 	})
 
-	iris.Get("/ec", func(ctx *iris.Context){
+	iris.Get("/ec", func(ctx *iris.Context) {
 		vc := view_controller.ECDashPage{}.GetPageViewControl(db)
 		ctx.Render("ec.html", map[string]interface{}{
-			"Result" : vc,
-			"Host" : ctx.Host(),
+			"Result": vc,
+			"Host":   ctx.Host(),
 		})
 	})
 
-	iris.Post("/ec/test", func(ctx *iris.Context){
+	iris.Post("/ec/test", func(ctx *iris.Context) {
 		url := string(ctx.FormValue("url"))
 		ecResult := model.ECJob{}
 		ecResult.Url = url
@@ -289,25 +289,29 @@ func main() {
 		ctx.Redirect("/ec", 302)
 		wg := sync.WaitGroup{}
 		go func() {
-			<- leakyBucket
+			<-leakyBucket
 			minCon := 0
 			maxCon := 50000
 			socketErrorNum := 0
 			result := model.WrkResult{}
 			getAnswer := false
+			errNum := 0
 			for !getAnswer {
 				wg.Add(1)
 				go func() {
 					defer wg.Done()
-					currentTarget := (minCon +  maxCon) / 2
+					currentTarget := (minCon + maxCon) / 2
 					result = wrk.Run(url,
 						strconv.Itoa(runtime.NumCPU()),
 						strconv.Itoa(currentTarget), "10s")
 					time.Sleep(AFTERBURN_WAIT_TIME * time.Second)
 					if result.IsError {
 						fmt.Println("error", url, currentTarget)
+						errNum++
 						return
 					}
+
+					errNum = 0
 
 					socketErrorNum = result.SocketErrors_Connection
 
@@ -315,9 +319,9 @@ func main() {
 
 					fmt.Println("result", minCon, maxCon, successRequestRatio)
 
-					if socketErrorNum != 0{
-						maxCon = currentTarget - int(float64(socketErrorNum) * 0.50)
-						if minCon > maxCon{
+					if socketErrorNum != 0 {
+						maxCon = currentTarget - int(float64(socketErrorNum)*0.50)
+						if minCon > maxCon {
 							temp := minCon
 							minCon = maxCon
 							maxCon = temp
@@ -325,19 +329,24 @@ func main() {
 						return
 					}
 
-					if ((1 < successRequestRatio) && (successRequestRatio < 5 )) || (currentTarget == maxCon){
+					if ((1 < successRequestRatio) && (successRequestRatio < 5)) || (currentTarget == maxCon) {
 						getAnswer = true
-					}else if successRequestRatio < 1{
+					} else if successRequestRatio < 1 {
 						minCon = currentTarget
-					}else if 5 < successRequestRatio {
+					} else if 5 < successRequestRatio {
 						maxCon = currentTarget
 					}
 
-					if float64(minCon) / float64(maxCon) > 0.99{
+					if float64(minCon)/float64(maxCon) > 0.99 {
 						getAnswer = true
 					}
 				}()
 				wg.Wait()
+				if errNum == 3 {
+					ecResult.IsDone = -1
+					db.Save(&ecResult)
+					return
+				}
 			}
 			capacity := (minCon + maxCon) / 2
 			fmt.Println("capacity of ", url, "=", capacity, "and can work at delivery rate", result.RequestPerSec)
@@ -351,7 +360,7 @@ func main() {
 			ecResult.ReadError = result.SocketErrors_Read
 			db.Save(&ecResult)
 			fmt.Println(len(ecSockets.Sockets))
-			ecSockets.BroadCast("refresh", map[string]interface{}{"command" : "need to refresh"})
+			ecSockets.BroadCast("refresh", map[string]interface{}{"command": "need to refresh"})
 			leakyBucket <- 1
 		}()
 	})
@@ -359,32 +368,32 @@ func main() {
 	iris.Config.Websocket.Endpoint = "/end_point"
 	iris.Config.Websocket.WriteBufferSize = 10000
 
-	iris.Websocket.OnConnection(func (c iris.WebsocketConnection){
+	iris.Websocket.OnConnection(func(c iris.WebsocketConnection) {
 
-		c.On("get-progress", func(msg string){
+		c.On("get-progress", func(msg string) {
 			i, _ := strconv.Atoi(msg)
 			progress := jobProgress[uint(i)]
 
 			var job model.Job
 			db.Find(&job, "id = ?", i)
 			var interfaceValue map[string]interface{}
-			if progress == 0{
+			if progress == 0 {
 				interfaceValue = map[string]interface{}{
-					"progress":100,
-					"ok":true,
-				};
-			}else {
+					"progress": 100,
+					"ok":       true,
+				}
+			} else {
 				interfaceValue = map[string]interface{}{
-					"progress":fmt.Sprintf("%.2f",jobProgress[job.ID]),
-					"ok":true,
+					"progress": fmt.Sprintf("%.2f", jobProgress[job.ID]),
+					"ok":       true,
 				}
 			}
 
-			c.Emit("ROOM" + strconv.Itoa(int(job.ID)), interfaceValue)
-			time.Sleep(10*time.Millisecond)
+			c.Emit("ROOM"+strconv.Itoa(int(job.ID)), interfaceValue)
+			time.Sleep(10 * time.Millisecond)
 		})
 
-		c.On("regis", func(msg string){
+		c.On("regis", func(msg string) {
 			switch msg {
 			case "/realtime":
 				realtimeSockets.Sockets = append(realtimeSockets.Sockets, &c)
@@ -397,26 +406,26 @@ func main() {
 			fmt.Println(msg)
 		})
 
-		c.On("realtime", func(msg string){
+		c.On("realtime", func(msg string) {
 			var request realtime.Request
 			fmt.Println(msg)
 			request.Parse(msg)
 			if (realtimeWrkEngine.GetState() != request.EngineStatus) && (request.EngineStatus == true) {
-				<- leakyBucket
+				<-leakyBucket
 				realtimeWrkEngine.SetConcurrency(request.Concurrency)
 				realtimeWrkEngine.SetSamplingTime(request.SamplingTime)
 				realtimeWrkEngine.SetUrl(request.Url)
 				realtimeWrkEngine.Start(c)
 				realtimeInUsed = true
 				realtimeSockets.BroadcastAllExcept("exit", map[string]interface{}{
-					"exit":"exit",
+					"exit": "exit",
 				}, c)
-			}else if (realtimeWrkEngine.GetState() == request.EngineStatus) && (request.EngineStatus == true){
+			} else if (realtimeWrkEngine.GetState() == request.EngineStatus) && (request.EngineStatus == true) {
 				realtimeWrkEngine.SetConcurrency(request.Concurrency)
 				realtimeWrkEngine.SetSamplingTime(request.SamplingTime)
-			}else if request.EngineStatus == false {
+			} else if request.EngineStatus == false {
 				realtimeWrkEngine.Stop()
-				go func(){
+				go func() {
 					leakyBucket <- 1
 				}()
 				realtimeInUsed = false
@@ -426,23 +435,23 @@ func main() {
 		})
 	})
 
-	go func(){
+	go func() {
 		wg := sync.WaitGroup{}
-		for{
-			select{
-			case job := <- wrkChannel:
+		for {
+			select {
+			case job := <-wrkChannel:
 				wg.Add(1)
-				<- leakyBucket
-				go func(){
+				<-leakyBucket
+				go func() {
 					var testset model.Testset
 					db.Find(&testset, "id = ?", job.Testset).Related(&testset.Testcase)
 					scriptFile := job.GenerateScript(job.Name)
-					for i, testcase := range testset.Testcase{
+					for i, testcase := range testset.Testcase {
 						ok := !job.RunWrk(testcase, "con", scriptFile, db)
-						jobProgress[job.ID] = float64(i+1) / float64(len(testset.Testcase)) *100.0
-						sockets.BroadCast("ROOM"+ strconv.Itoa(int(job.ID)), map[string]interface{}{
-							"progress":fmt.Sprintf("%.2f",jobProgress[job.ID]),
-							"ok":ok,
+						jobProgress[job.ID] = float64(i+1) / float64(len(testset.Testcase)) * 100.0
+						sockets.BroadCast("ROOM"+strconv.Itoa(int(job.ID)), map[string]interface{}{
+							"progress": fmt.Sprintf("%.2f", jobProgress[job.ID]),
+							"ok":       ok,
 						})
 						db.Save(&job)
 						time.Sleep(AFTERBURN_WAIT_TIME * time.Second)
@@ -459,7 +468,6 @@ func main() {
 		}
 	}()
 
-
 	iris.Listen(":2559")
 }
 
@@ -469,40 +477,40 @@ func initializeTestset(db *gorm.DB) {
 	t1.Name = "simple testset"
 	db.First(&t1, "name = ?", t1.Name).Related(&t1.Testcase)
 
-	if t1.ID == 1{
-		return;
+	if t1.ID == 1 {
+		return
 	}
 
 	t1.Testcase = append(t1.Testcase,
-		model.Testcase{Thread:"1",
-			Connection:"1",
-			Duration:"30s",
+		model.Testcase{Thread: "1",
+			Connection: "1",
+			Duration:   "30s",
 		})
 	t1.Testcase = append(t1.Testcase,
-		model.Testcase{Thread:"4",
-			Connection:"10",
-			Duration:"30s",
+		model.Testcase{Thread: "4",
+			Connection: "10",
+			Duration:   "30s",
 		})
 	t1.Testcase = append(t1.Testcase,
-		model.Testcase{Thread:"4",
-			Connection:"100",
-			Duration:"30s",
+		model.Testcase{Thread: "4",
+			Connection: "100",
+			Duration:   "30s",
 		})
 	t1.Testcase = append(t1.Testcase,
-		model.Testcase{Thread:"4",
-			Connection:"1k",
-			Duration:"30s",
+		model.Testcase{Thread: "4",
+			Connection: "1k",
+			Duration:   "30s",
 		})
 	t1.Testcase = append(t1.Testcase,
-		model.Testcase{Thread:"4",
-			Connection:"10k",
-			Duration:"30s",
+		model.Testcase{Thread: "4",
+			Connection: "10k",
+			Duration:   "30s",
 		})
 
 	db.Save(&t1)
 }
 
-func initializeModel(db *gorm.DB){
+func initializeModel(db *gorm.DB) {
 	db.AutoMigrate(&model.Job{})
 	db.AutoMigrate(&model.Testcase{})
 	db.AutoMigrate(&model.Testset{})
