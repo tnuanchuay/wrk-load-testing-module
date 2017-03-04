@@ -54,7 +54,7 @@ func main() {
 	var jobProgress map[uint]float64 = make(map[uint]float64)
 	var wrkChannel = make(chan *model.Job, 100)
 
-	app.Config.IsDevelopment = true
+	//app.Config.IsDevelopment = true
 
 	app.StaticWeb("/assets", "./static/assets")
 
