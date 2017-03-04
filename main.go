@@ -20,6 +20,7 @@ import (
 	"gopkg.in/kataras/iris.v6"
 	"gopkg.in/kataras/iris.v6/adaptors/websocket"
 	"gopkg.in/kataras/iris.v6/adaptors/httprouter"
+	"github.com/kataras/iris/adaptors/view"
 )
 
 const (
@@ -39,7 +40,7 @@ func main() {
 
 	var wss  websocket.Server
 
-	app.Adapt(httprouter.New())
+	app.Adapt(iris.DevLogger(), httprouter.New(), view.HTML("./templates", ".html"))
 	go func() {
 		leakyBucket <- 1
 	}()
