@@ -17,7 +17,7 @@ import (
 	"github.com/tspn/wrk-load-testing-module/view-controller"
 	"github.com/tspn/wrk-load-testing-module/wrk"
 	"github.com/tspn/wrk-load-testing-module/ws"
-	"github.com/kataras/iris/adaptors/websocket"
+	"gopkg.in/kataras/iris.v6/adaptors/websocket"
 )
 
 const (
