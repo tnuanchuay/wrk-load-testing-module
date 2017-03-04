@@ -10,14 +10,16 @@ import (
 
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/sqlite"
-	"github.com/kataras/iris"
 	"github.com/tspn/wrk-load-testing-module/model"
 	"github.com/tspn/wrk-load-testing-module/realtime"
 	"github.com/tspn/wrk-load-testing-module/unit/si"
 	"github.com/tspn/wrk-load-testing-module/view-controller"
 	"github.com/tspn/wrk-load-testing-module/wrk"
 	"github.com/tspn/wrk-load-testing-module/ws"
+
+	"gopkg.in/kataras/iris.v6"
 	"gopkg.in/kataras/iris.v6/adaptors/websocket"
+	"gopkg.in/kataras/iris.v6/adaptors/httprouter"
 )
 
 const (
@@ -32,8 +34,12 @@ func main() {
 	realtimeInUsed := false
 	leakyBucket := make(chan int)
 
-	app := iris.New()
+	var app *iris.Framework
+	app = iris.New()
 
+	var wss  websocket.Server
+
+	app.Adapt(httprouter.New())
 	go func() {
 		leakyBucket <- 1
 	}()
@@ -53,8 +59,6 @@ func main() {
 
 	var jobProgress map[uint]float64 = make(map[uint]float64)
 	var wrkChannel = make(chan *model.Job, 100)
-
-	//app.Config.IsDevelopment = true
 
 	app.StaticWeb("/assets", "./static/assets")
 
@@ -369,7 +373,7 @@ func main() {
 		}()
 	})
 
-	wss := websocket.New(websocket.Config{
+	wss = websocket.New(websocket.Config{
 		ReadBufferSize:10000,
 		WriteBufferSize:10000,
 		Endpoint:"/end_point",

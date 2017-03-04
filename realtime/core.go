@@ -10,7 +10,7 @@ import (
 	"os/exec"
 	"strconv"
 	"encoding/json"
-	"github.com/kataras/iris/adaptors/websocket"
+	"gopkg.in/kataras/iris.v6/adaptors/websocket"
 )
 
 type WrkEngine struct{
