@@ -369,13 +369,13 @@ func main() {
 		}()
 	})
 
-	ws := websocket.New(websocket.Config{
+	wss := websocket.New(websocket.Config{
 		ReadBufferSize:10000,
 		WriteBufferSize:10000,
 		Endpoint:"/end_point",
 	})
 
-	ws.OnConnection(func(c websocket.Connection) {
+	wss.OnConnection(func(c websocket.Connection) {
 
 		c.On("get-progress", func(msg string) {
 			i, _ := strconv.Atoi(msg)
@@ -442,7 +442,7 @@ func main() {
 		})
 	})
 
-	app.Adapt(ws)
+	app.Adapt(wss)
 
 	go func() {
 		wg := sync.WaitGroup{}
