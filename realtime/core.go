@@ -9,7 +9,6 @@ import (
 	"strings"
 	"os/exec"
 	"strconv"
-	"github.com/kataras/iris"
 	"encoding/json"
 	"github.com/kataras/iris/adaptors/websocket"
 )

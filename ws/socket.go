@@ -1,7 +1,6 @@
 package ws
 
 import (
-	"github.com/kataras/iris"
 	"encoding/json"
 	"time"
 	"github.com/kataras/iris/adaptors/websocket"
