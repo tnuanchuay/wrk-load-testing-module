@@ -17,6 +17,7 @@ import (
 	"github.com/tspn/wrk-load-testing-module/view-controller"
 	"github.com/tspn/wrk-load-testing-module/wrk"
 	"github.com/tspn/wrk-load-testing-module/ws"
+	"github.com/kataras/iris/adaptors/websocket"
 )
 
 const (
@@ -30,6 +31,8 @@ func main() {
 	var ecSockets ws.GroupSocket
 	realtimeInUsed := false
 	leakyBucket := make(chan int)
+
+	app := iris.New()
 
 	go func() {
 		leakyBucket <- 1
@@ -51,24 +54,24 @@ func main() {
 	var jobProgress map[uint]float64 = make(map[uint]float64)
 	var wrkChannel = make(chan *model.Job, 100)
 
-	iris.Config.IsDevelopment = true
+	app.Config.IsDevelopment = true
 
-	iris.StaticWeb("/assets", "./static/assets")
+	app.StaticWeb("/assets", "./static/assets")
 
-	iris.Get("/", func(ctx *iris.Context) {
+	app.Get("/", func(ctx *iris.Context) {
 		ctx.Redirect("/hello")
 	})
 
-	iris.Get("/hello", func(ctx *iris.Context) {
+	app.Get("/hello", func(ctx *iris.Context) {
 		ctx.Render("hello.html", nil)
 	})
 
-	iris.Get("/run", func(ctx *iris.Context) {
+	app.Get("/run", func(ctx *iris.Context) {
 		home := view_controller.Home{}.GetViewControl(db)
 		ctx.Render("home.html", home)
 	})
 
-	iris.Get("/result", func(ctx *iris.Context) {
+	app.Get("/result", func(ctx *iris.Context) {
 		resultViewControl := view_controller.Result{}.GetViewControl(db)
 		ctx.Render("job.html", struct {
 			Result *view_controller.Result
@@ -76,7 +79,7 @@ func main() {
 		}{Result: resultViewControl, Host: ctx.Host()})
 	})
 
-	iris.Get("/result/:id", func(ctx *iris.Context) {
+	app.Get("/result/:id", func(ctx *iris.Context) {
 		stringId := ctx.Param("id")
 		intId, _ := strconv.Atoi(stringId)
 		resultJobViewControl := view_controller.JobResult{}.GetJobViewControl(db, uint(intId))
@@ -90,14 +93,14 @@ func main() {
 		}
 	})
 
-	iris.Get("/result/:id/diff", func(ctx *iris.Context) {
+	app.Get("/result/:id/diff", func(ctx *iris.Context) {
 		stringId := ctx.Param("id")
 		intId, _ := strconv.Atoi(stringId)
 		jobDiffSelectViewControl := view_controller.DiffSelect{}.GetViewControl(db, uint(intId))
 		ctx.Render("diff-select.html", jobDiffSelectViewControl)
 	})
 
-	iris.Get("/result/:id/diff/:id2", func(ctx *iris.Context) {
+	app.Get("/result/:id/diff/:id2", func(ctx *iris.Context) {
 		stringId1 := ctx.Param("id")
 		stringId2 := ctx.Param("id2")
 		intId1, _ := strconv.Atoi(stringId1)
@@ -106,18 +109,18 @@ func main() {
 		ctx.Render("diff.html", jobDiffViewControl)
 	})
 
-	iris.Get("/result/:id/del", func(ctx *iris.Context) {
+	app.Get("/result/:id/del", func(ctx *iris.Context) {
 		id := ctx.Param("id")
 		db.Delete(&model.Job{}, "id = ?", id)
 		ctx.Redirect("/result")
 	})
 
-	iris.Get("/testset", func(ctx *iris.Context) {
+	app.Get("/testset", func(ctx *iris.Context) {
 		testsetPage := view_controller.TestsetPage{}.GetPageViewControl(db)
 		ctx.Render("testset.html", testsetPage)
 	})
 
-	iris.Get("/testset/:id", func(ctx *iris.Context) {
+	app.Get("/testset/:id", func(ctx *iris.Context) {
 		stringId := ctx.Param("id")
 
 		if stringId == "new" {
@@ -139,7 +142,7 @@ func main() {
 		ctx.Render("testset-edit.html", vc)
 	})
 
-	iris.Post("/testset", func(ctx *iris.Context) {
+	app.Post("/testset", func(ctx *iris.Context) {
 		name := string(ctx.FormValue("name"))
 		cpu := runtime.NumCPU()
 		duration := string(ctx.FormValue("duration"))
@@ -166,14 +169,14 @@ func main() {
 		ctx.Redirect("/testset")
 	})
 
-	iris.Get("/testset/:id/del", func(ctx *iris.Context) {
+	app.Get("/testset/:id/del", func(ctx *iris.Context) {
 		id := string(ctx.Param("id"))
 		intId, _ := strconv.Atoi(id)
 		db.Delete(&model.Testset{}, "id = ?", uint(intId)).Related(&model.Testcase{})
 		ctx.Redirect("/testset")
 	})
 
-	iris.Post("/testset/:id/edit", func(ctx *iris.Context) {
+	app.Post("/testset/:id/edit", func(ctx *iris.Context) {
 		name := string(ctx.FormValue("name"))
 		cpu := runtime.NumCPU()
 		duration := string(ctx.FormValue("duration"))
@@ -206,7 +209,7 @@ func main() {
 		ctx.Redirect("/testset")
 	})
 
-	iris.Get("/rerun/:id", func(ctx *iris.Context) {
+	app.Get("/rerun/:id", func(ctx *iris.Context) {
 		sId := string(ctx.Param("id"))
 		var job model.Job
 		db.Find(&job, "id = ?", sId)
@@ -223,7 +226,7 @@ func main() {
 		ctx.Redirect("/result")
 	})
 
-	iris.Post("/wrk", func(ctx *iris.Context) {
+	app.Post("/wrk", func(ctx *iris.Context) {
 		name := string(ctx.FormValue("name"))
 		url := string(ctx.FormValue("url"))
 		method := string(ctx.FormValue("method"))
@@ -251,7 +254,7 @@ func main() {
 		ctx.Redirect("/result")
 	})
 
-	iris.Get("/realtime/reset", func(ctx *iris.Context) {
+	app.Get("/realtime/reset", func(ctx *iris.Context) {
 		realtimeWrkEngine.Stop()
 		realtimeInUsed = false
 		go func() {
@@ -263,7 +266,7 @@ func main() {
 		ctx.Redirect("/realtime")
 	})
 
-	iris.Get("/realtime", func(ctx *iris.Context) {
+	app.Get("/realtime", func(ctx *iris.Context) {
 		if !realtimeInUsed {
 			ctx.Render("realtime.html", map[string]interface{}{"Host": ctx.Host()})
 		} else {
@@ -273,7 +276,7 @@ func main() {
 		fmt.Println("realtimeInUsed =", realtimeInUsed)
 	})
 
-	iris.Get("/ec", func(ctx *iris.Context) {
+	app.Get("/ec", func(ctx *iris.Context) {
 		vc := view_controller.ECDashPage{}.GetPageViewControl(db)
 		ctx.Render("ec.html", map[string]interface{}{
 			"Result": vc,
@@ -281,7 +284,7 @@ func main() {
 		})
 	})
 
-	iris.Post("/ec/test", func(ctx *iris.Context) {
+	app.Post("/ec/test", func(ctx *iris.Context) {
 		url := string(ctx.FormValue("url"))
 		ecResult := model.ECJob{}
 		ecResult.Url = url
@@ -366,10 +369,13 @@ func main() {
 		}()
 	})
 
-	iris.Config.Websocket.Endpoint = "/end_point"
-	iris.Config.Websocket.WriteBufferSize = 10000
+	ws := websocket.New(websocket.Config{
+		ReadBufferSize:10000,
+		WriteBufferSize:10000,
+		Endpoint:"/end_point",
+	})
 
-	iris.Websocket.OnConnection(func(c iris.WebsocketConnection) {
+	ws.OnConnection(func(c websocket.Connection) {
 
 		c.On("get-progress", func(msg string) {
 			i, _ := strconv.Atoi(msg)
@@ -436,6 +442,8 @@ func main() {
 		})
 	})
 
+	app.Adapt(ws)
+
 	go func() {
 		wg := sync.WaitGroup{}
 		for {
@@ -469,7 +477,7 @@ func main() {
 		}
 	}()
 
-	iris.Listen(":2559")
+	app.Listen(":2559")
 }
 
 func initializeTestset(db *gorm.DB) {

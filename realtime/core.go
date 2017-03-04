@@ -11,6 +11,7 @@ import (
 	"strconv"
 	"github.com/kataras/iris"
 	"encoding/json"
+	"github.com/kataras/iris/adaptors/websocket"
 )
 
 type WrkEngine struct{
@@ -57,7 +58,7 @@ func (j *WrkEngine) Stop(){
 	j.Url = ""
 }
 
-func (j *WrkEngine) Start(so iris.WebsocketConnection){
+func (j *WrkEngine) Start(so websocket.Connection){
 	j.status = true
 	go func() {
 		for j.status {

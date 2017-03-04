@@ -4,13 +4,14 @@ import (
 	"github.com/kataras/iris"
 	"encoding/json"
 	"time"
+	"github.com/kataras/iris/adaptors/websocket"
 )
 
 type GroupSocket struct{
-	Sockets	[]*iris.WebsocketConnection
+	Sockets	[]*websocket.Connection
 }
 
-func (r *GroupSocket) BroadcastAllExcept(channel string, data map[string]interface{}, so iris.WebsocketConnection){
+func (r *GroupSocket) BroadcastAllExcept(channel string, data map[string]interface{}, so websocket.Connection){
 	b, _ := json.Marshal(data)
 	for _, s := range r.Sockets{
 		if (*s).ID() != so.ID(){
@@ -28,7 +29,7 @@ func (r *GroupSocket) DisconnectAll(){
 	r = new(GroupSocket)
 }
 
-func (r *GroupSocket) DisconnectAllExcept(so iris.WebsocketConnection){
+func (r *GroupSocket) DisconnectAllExcept(so websocket.Connection){
 	for i, s := range r.Sockets{
 		if (*s).ID() != so.ID(){
 			r.Sockets = append(r.Sockets[:i], r.Sockets[i+1:]...)
@@ -39,7 +40,7 @@ func (r *GroupSocket) DisconnectAllExcept(so iris.WebsocketConnection){
 	}
 }
 
-func (r *GroupSocket) Disconnect(so iris.WebsocketConnection){
+func (r *GroupSocket) Disconnect(so websocket.Connection){
 
 	for i, s := range r.Sockets{
 		if (*s).ID() == so.ID(){
