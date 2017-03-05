@@ -10,9 +10,9 @@ The wg/wrk extension tool provides continuous load testing in range of connectio
 * Non-2xx Response
 
 ### Require
-* > 512 MB of RAM
+* > 512 MB RAM for building module
 * [wg/wrk](https://github.com/wg/wrk)
-* [golang version > 1.5](https://golang.org/)
+* [golang version >= 1.8](https://golang.org/)
 
 ### Toubleshoot
 * kataras/go-websocket work incorrectly in new version.
