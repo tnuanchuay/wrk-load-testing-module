@@ -231,6 +231,39 @@ func main() {
 		ctx.Redirect("/result")
 	})
 
+	app.Post("/trig", func(ctx * iris.Context){
+		name := string(ctx.FormValue("name"))
+		url := string(ctx.FormValue("url"))
+		method := string(ctx.FormValue("method"))
+		testset := string(ctx.FormValue("testset"))
+		keys := ctx.FormValues()["key"]
+		values := ctx.FormValues()["value"]
+
+		var job model.Job
+		job.Name = name
+		job.RequestUrl = url
+		job.RequestMethod = method
+
+		var testSet model.Testset
+		db.Find(&testSet, "id = ?", testset).Related(&testSet.Testcase)
+		if testSet == nil {
+			ctx.JSON(iris.StatusOK, map[string]interface{}{"err":"testset not found"})
+			return;
+		}
+
+		job.Testset = testSet.ID
+
+		job.KeyValueToLoad(keys, values)
+
+		job.ExitInterrupt = false
+		job.Complete = false
+
+		db.Create(&job)
+		jobProgress[job.ID] = 1
+		wrkChannel <- &job
+		ctx.Redirect("/result")
+	})
+
 	app.Post("/wrk", func(ctx *iris.Context) {
 		name := string(ctx.FormValue("name"))
 		url := string(ctx.FormValue("url"))
@@ -288,6 +321,8 @@ func main() {
 			"Host":   ctx.Host(),
 		})
 	})
+
+
 
 	app.Post("/ec/test", func(ctx *iris.Context) {
 		url := string(ctx.FormValue("url"))
