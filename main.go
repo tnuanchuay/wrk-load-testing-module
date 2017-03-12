@@ -246,7 +246,7 @@ func main() {
 
 		var testSet model.Testset
 		db.Find(&testSet, "id = ?", testset).Related(&testSet.Testcase)
-		if testSet == nil {
+		if testSet.ID == 0 {
 			ctx.JSON(iris.StatusOK, map[string]interface{}{"err":"testset not found"})
 			return;
 		}
