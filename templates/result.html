@@ -257,7 +257,7 @@
             $("#graph").append(`<div id="requests"></div>`);
             $("#graph").append(`<div id="totalTransfer"></div>`);
             $("#graph").append(`<div id="latency"></div>`);
-            $("#graph").append(`<div id="rpsOneThread"></div>`);
+            //$("#graph").append(`<div id="rpsOneThread"></div>`);
             $("#graph").append(`<div id="socketerr"></div>`);
             $("#graph").append(`<div id="non2xx3xx"></div>`);
             $("#graph").append(`<div id="success"></div>`);
@@ -538,7 +538,7 @@
                     }
                 ]
             });
-            Highcharts.chart('rpsOneThread', {
+            /*Highcharts.chart('rpsOneThread', {
                 chart: {
                     type: 'spline',
                     animation: Highcharts.svg, // don't animate in old IE
@@ -587,7 +587,7 @@
                         data: rpsot_stdev
                     }
                 ]
-            });
+            });*/
             Highcharts.chart('socketerr', {
                 chart: {
                     type: 'spline',

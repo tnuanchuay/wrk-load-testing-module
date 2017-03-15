@@ -22,6 +22,7 @@ type Job struct{
 	Label         	string
 	Testset       	uint
 	Load          	string
+	Script		string
 	WrkResult	[]WrkResult
 }
 
@@ -93,6 +94,8 @@ func (j *Job) GenerateScript(filename string)string{
 	if len(j.Load) > 0{
 		script += fmt.Sprintf(statics.LUA_LOAD, j.Load)
 		script += fmt.Sprintf(statics.LUA_CONTENTTYPE, "application/x-www-form-urlencoded")
+	}else if len(j.Script) > 0{
+		script += j.Script
 	}
 	md5filename := md5.Sum([]byte(filename))
 	fmt.Println(script)

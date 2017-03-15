@@ -24,7 +24,7 @@ import (
 )
 
 const (
-	AFTERBURN_WAIT_TIME = 70
+	AFTERBURN_WAIT_TIME = 10
 )
 
 func main() {
@@ -269,6 +269,7 @@ func main() {
 		url := string(ctx.FormValue("url"))
 		method := string(ctx.FormValue("method"))
 		testset := string(ctx.FormValue("testset"))
+		lua := string(ctx.FormValue("lua"))
 		keys := ctx.FormValues()["key"]
 		values := ctx.FormValues()["value"]
 
@@ -276,6 +277,10 @@ func main() {
 		job.Name = name
 		job.RequestUrl = url
 		job.RequestMethod = method
+
+		if lua != "" {
+			job.Script = lua
+		}
 
 		var testSet model.Testset
 		db.Find(&testSet, "name = ?", testset).Related(&testSet.Testcase)
